@@ -41,17 +41,23 @@ Update PIP
 ### Basic usage 
 
 ```python 
-    data = AdvancedExcel(file) ``
-    result = data.getSheet(sheetName) | p(data.getNextValue, "Study Number")
+
+    from AdvancedExcel import AdvancedExcel
+
+    data = AdvancedExcel("simple_excel.xlsx") 
+    result = data.getSheet("Data") | p(data.getNextValue, "Study Number")
 ```
 
 ### Example using sspipe for complex chaining:
 ```python
     
     from sspipe import Pipe, p
+    from pandas import pd
+    from AdvancedExcel import AdvancedExcel
+    
     excel_processor = AdvancedExcel("complex_excel.xlsx")
     final_df_chained = (
-                        excel_processor.getSheet(sheetName)
+                        excel_processor.getSheet("Raw data")
                         | p(excel_processor.removeEmptyRows)
                         | p(excel_processor.setColumn2Numeric, columnName="Quantity")
                         | p(pd.merge, excel_processor.getSheet("Sheet1") 
@@ -67,9 +73,10 @@ Update PIP
 ### Another example of usage on a complex Excel:
 
 ```python
+      from AdvancedExcel import AdvancedExcel
 
-      data = AdvancedExcel(file)
-      results = data.getSheet(sheetName) | p(data.getDataFrameBlocksByKeyName, "Batch Number")
+      data = AdvancedExcel("studies_excel.xlsx")
+      results = data.getSheet("Raw data") | p(data.getDataFrameBlocksByKeyName, "Batch Number")
       allTables = []
       for dblock in results: 
             study_num = dblock | p(data.getNextValue,"Study No") 
@@ -83,6 +90,5 @@ Update PIP
                            | p(data.removeRowsIfUniqueValueOnBotton, 2) \
                            | p(data.mergeColumns, 1, 2, '_', 'SAMPLE_REPLICATE') \
                            | p(data.removeColumnByName, "Sample #_Replicat #")
-                          # | p(data.removeColumnByName, '^Com.*')
             allTables.append(table)
 ```
