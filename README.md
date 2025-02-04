@@ -72,6 +72,8 @@ Update PIP
 ```
 ### Another example of usage on a complex Excel:
 
+This is an example of a datasheet that contains multiple tables, extracting all values from each table as a dataframe
+
 ```python
       from AdvancedExcel import AdvancedExcel
 
