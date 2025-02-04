@@ -51,7 +51,7 @@ Update PIP
     from sspipe import Pipe, p
     
     final_df_chained = (
-    excel_processor.read_excel("complex_excel.xlsx", "Sheet1", init_row=2, end_row=10)
+    AdvancedExcel("complex_excel.xlsx", "Sheet1", init_row=2, end_row=10)
     | p(excel_processor.removeEmptyRows)
     | p(excel_processor.setColumn2Numeric, columnName="Quantity")
     | p(pd.merge, excel_processor.read_excel("complex_excel.xlsx", "Sheet1", init_row=15, end_row=20) | p(excel_processor.removeEmptyRows) | p(excel_processor.renameHeaders, {"OldName": "CategoryName"}), on="ProductID", how="left")
@@ -64,6 +64,7 @@ Update PIP
 
 ```python
 
+      data = AdvancedExcel(file)
       results = data.getSheet(sheetName) | p(data.getDataFrameBlocksByKeyName, "Batch Number")
       allTables = []
       for dblock in results: 
