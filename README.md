@@ -49,16 +49,20 @@ Update PIP
 ```python
     
     from sspipe import Pipe, p
-    
+    excel_processor = AdvancedExcel("complex_excel.xlsx")
     final_df_chained = (
-    AdvancedExcel("complex_excel.xlsx", "Sheet1", init_row=2, end_row=10)
-    | p(excel_processor.removeEmptyRows)
-    | p(excel_processor.setColumn2Numeric, columnName="Quantity")
-    | p(pd.merge, excel_processor.read_excel("complex_excel.xlsx", "Sheet1", init_row=15, end_row=20) | p(excel_processor.removeEmptyRows) | p(excel_processor.renameHeaders, {"OldName": "CategoryName"}), on="ProductID", how="left")
-    | p(pd.merge, excel_processor.read_excel("complex_excel.xlsx", "Sheet2") | p(excel_processor.removeEmptyRows) | p(excel_processor.stripAll) | p(excel_processor.removeDuplicates), left_index=True, right_index=True) # Example merge using indexes
-    | p(lambda df: pd.concat([df, excel_processor.read_excel("complex_excel.xlsx", "Sheet3") | p(excel_processor.transpose)], axis=1))
-    | p(excel_processor.write_excel, "chained_processed_data.xlsx", "FinalData") # Write the data
-    )
+                        excel_processor.getSheet(sheetName)
+                        | p(excel_processor.removeEmptyRows)
+                        | p(excel_processor.setColumn2Numeric, columnName="Quantity")
+                        | p(pd.merge, excel_processor.getSheet("Sheet1") 
+                                        | p(excel_processor.removeEmptyRows) 
+                                        | p(excel_processor.renameHeaders, {"OldName": "CategoryName"}), on="ProductID", how="left")
+                        | p(pd.merge, excel_processor.getSheet("Sheet2") 
+                                        | p(excel_processor.removeEmptyRows) 
+                                        | p(excel_processor.stripAll) 
+                                        | p(excel_processor.removeDuplicates), left_index=True, right_index=True) # Example merge using indexes
+                        | p(lambda df: pd.concat([df, excel_processor.read_excel("complex_excel.xlsx", "Sheet3") | p(excel_processor.transpose)], axis=1))
+                        )
 ```
 ### Another example of usage on a complex Excel:
 
