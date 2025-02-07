@@ -72,7 +72,7 @@ Update PIP
 ```
 ### Another example of usage on a complex Excel:
 
-This is an example of a datasheet that contains multiple tables, extracting all values from each table as a dataframe
+These are more examples of a datasheet that contains multiple tables, extracting all values from each table as a dataframe
 
 ```python
       from AdvancedExcel import AdvancedExcel
@@ -93,4 +93,30 @@ This is an example of a datasheet that contains multiple tables, extracting all 
                            | p(data.mergeColumns, 1, 2, '_', 'SAMPLE_REPLICATE') \
                            | p(data.removeColumnByName, "Sample #_Replicat #")
             allTables.append(table)
+```
+
+```python
+        from AdvancedExcel import AdvancedExcel
+
+        data = AdvancedExcel("studies_excel.xlsx")
+        
+        columns_to_rename = { "PLATEFORM": "PLATFORM" }
+
+        columns_not_to_clean_separators = ["PARAMETER"]
+
+        results = data.getSheet("data_raw") \
+                     | p(data.caseHeaders) \
+                     | p(data.renameHeaders, columns_to_rename) \
+                     | p(data.stripAll) \
+                     | p(data.removeColumnByName, r"^T\d+$") \
+                     | p(data.removeColumnByName, r"^T\d+\.\d+$") \
+                     | p(data.removeAllCRLF, ";") \
+                     | p(data.replaceNaNStrings) \
+                     | p(data.replaceSpacesBySeparator, ";", [], columns_not_to_clean_separators) \
+                     | p(data.replaceAll, ",;", ";", [], columns_not_to_clean_separators) \
+                     | p(data.replaceAll, "tbd", "TBD", [], []) \
+                     | p(data.replaceByDictionary, config["replace"]["values"]["units"], "UNIT") \
+                     | p(data.caseColumnValues, "PARAMETER", title=True) \
+                     | p(data.replaceByDictionary, config["replace"]["values"]["variables"], "PARAMETER")
+
 ```
