@@ -1,24 +1,16 @@
 """
-AdvancedExcel package.
+Legacy compatibility for direct 'src' on PYTHONPATH (rare after pip install -e .).
 
-This __init__ makes the main class importable as:
+Recommended after `pip install -e .` or `pip install advanced-excel`:
 
-    from AdvancedExcel import AdvancedExcel
-    # or
-    import AdvancedExcel
-    ae = AdvancedExcel.AdvancedExcel(...)
-
-The old style `from . import AdvancedExcel` (submodule) is still supported
-for any code that relied on it.
+    from advanced_excel import AdvancedExcel
 """
 
-from .AdvancedExcel import AdvancedExcel
+from advanced_excel import AdvancedExcel
+from advanced_excel import ROW_INDEX, COL_INDEX, DATA, __version__
 
-# Re-export for convenience and to satisfy linters
-__all__ = ["AdvancedExcel"]
+__all__ = ["AdvancedExcel", "ROW_INDEX", "COL_INDEX", "DATA", "__version__"]
 
-# Constants and version are available as AdvancedExcel.XXX
-# (class attributes) and also as module-level names.
-from .AdvancedExcel import ROW_INDEX, COL_INDEX, DATA, __version__  # noqa: F401
+
 
 

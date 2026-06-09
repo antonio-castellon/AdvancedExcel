@@ -9,7 +9,7 @@ class RowMixin:
     setting rows as headers, forward-fill on rows, etc.
     """
 
-    def removeDuplicates(self, df):
+    def remove_duplicates(self, df):
         """
         Removes duplicate rows from a DataFrame and resets the index.
 
@@ -29,7 +29,7 @@ class RowMixin:
         df = df.drop(columns=["index"], errors="ignore")  # Drop the old index column (if it exists)
         return df
 
-    def removeRowsByRegEx(self, df, columnName, regex):
+    def remove_rows_by_regex(self, df, columnName, regex):
         """
         Removes rows from a DataFrame where a specified column matches a regular expression.
 
@@ -50,7 +50,7 @@ class RowMixin:
         df = df[~filter]  # Keep rows that *do not* match the regex
         return df
 
-    def removeRowsNotInRegEx(self, df, columnName, regex):
+    def remove_rows_not_in_regex(self, df, columnName, regex):
         """
         Removes rows from a DataFrame where a specified column *does not* match a regular expression.
 
@@ -71,7 +71,7 @@ class RowMixin:
         df = df[filter]  # Keep only rows that *do* match the regex
         return df
 
-    def removeRowsWhereValueInColumnIsEmpty(self, df, columnName):
+    def remove_rows_where_value_in_column_is_empty(self, df, columnName):
         """
         Removes rows from a DataFrame where a specified column contains 'na' or null values.
 
@@ -94,7 +94,7 @@ class RowMixin:
             df = df.drop(columns=["index"], errors="ignore")  # Drop the old index column
         return df
 
-    def removeRowsWhereValueIsEqualInColumn(self, df, columnName, rowValue):
+    def remove_rows_where_value_is_equal_in_column(self, df, columnName, rowValue):
         """
         Removes rows from a DataFrame where a specified column's value is equal to rowValue.
 
@@ -117,7 +117,7 @@ class RowMixin:
             df = df.drop(columns=["index"], errors="ignore")  # Drop the old index column
         return df
 
-    def mergeRows(self, df, init_row, end_row, separator=""):
+    def merge_rows(self, df, init_row, end_row, separator=""):
         """
         Merges the content of multiple rows into a single row.
 
@@ -144,19 +144,16 @@ class RowMixin:
             np.where(pd.isna(dfToMerge), separator, dfToMerge), dfToMerge.index, dfToMerge.columns
         )  # Replace NaN with separator
         dfToMerge["TMP"] = 0  # Temporary column for grouping
-        dfToMerge = dfToMerge.set_index("TMP")  # Set temporary column as index
-        dfToMerge = dfToMerge.groupby(dfToMerge["TMP"], as_index=False).agg(
-            " ".join
-        )  # Merge rows using groupby and join
-        dfToMerge = dfToMerge.drop("TMP", axis=1)  # Drop the temporary column
+        grouped = dfToMerge.groupby("TMP", as_index=False).agg(lambda x: separator.join(x))
+        grouped = grouped.drop(columns=["TMP"], errors="ignore")
 
-        df = pd.concat([dfHead, dfToMerge, dfTail], ignore_index=True)  # Concatenate the DataFrames
+        df = pd.concat([dfHead, grouped, dfTail], ignore_index=True)  # Concatenate the DataFrames
         df = df.reset_index(drop=True)  # Reset the index
         # df = df.drop(columns=['index'], errors='ignore')  # Drop the old index column. This is now redundant due to ignore_index=True in concat.
 
         return df
 
-    def removeRowIfUniqueValue(self, df, init_row, end_row):
+    def remove_row_if_unique_value(self, df, init_row, end_row):
         """
         Removes rows containing only a single unique non-NaN value within a specified range.
 
@@ -183,7 +180,7 @@ class RowMixin:
         df = df.reset_index(drop=True)
         return df
 
-    def removeRowsIfUniqueValueOnTop(self, df, offset):
+    def remove_rows_if_unique_value_on_top(self, df, offset):
         """
         Removes rows from the top of a DataFrame if they contain only one unique value.
 
@@ -198,9 +195,9 @@ class RowMixin:
             pandas.DataFrame: A new DataFrame with the single-value rows removed from the top.
             A copy of the DataFrame is created, so the original DataFrame is not modified in place.
         """
-        return self.removeRowIfUniqueValue(df, 0, offset)
+        return self.remove_row_if_unique_value(df, 0, offset)
 
-    def removeRowsIfUniqueValueOnBotton(self, df, offset):
+    def remove_rows_if_unique_value_on_bottom(self, df, offset):
         """
         Removes rows from the bottom of a DataFrame if they contain only one unique value.
 
@@ -215,9 +212,9 @@ class RowMixin:
             pandas.DataFrame: A new DataFrame with the single-value rows removed from the bottom.
             A copy of the DataFrame is created, so the original DataFrame is not modified in place.
         """
-        return self.removeRowIfUniqueValue(df, len(df.index) - offset, len(df.index))
+        return self.remove_row_if_unique_value(df, len(df.index) - offset, len(df.index))
 
-    def removeAllRowsFromAColumnNameWhenHasValue(
+    def remove_all_rows_from_a_column_name_when_has_value(
         self, df, init_row, columnName, rowValue, include_remove_row=True
     ):
         """
@@ -241,11 +238,11 @@ class RowMixin:
             DataFrame is created, so the original DataFrame is not modified in place.
         """
         column_index = df.columns.get_loc(columnName)  # Get column index
-        return self.removeAllRowsFromAColumnWhenHasValue(
+        return self.remove_all_rows_from_a_column_when_has_value(
             df, init_row, column_index, rowValue, include_remove_row
         )
 
-    def removeAllRowsFromAColumnWhenHasValue(
+    def remove_all_rows_from_a_column_when_has_value(
         self, df, init_row, index_column, value, include_remove_row=True
     ):
         """
@@ -287,7 +284,7 @@ class RowMixin:
             df = df.reset_index(drop=True)
         return df
 
-    def removeAllRowsBeforeColumnValue(self, df, init_row, index_column, value):
+    def remove_all_rows_before_column_value(self, df, init_row, index_column, value):
         """
         Removes rows from a DataFrame *before* a specified value is found in a column.
 
@@ -321,7 +318,7 @@ class RowMixin:
             df = df.reset_index(drop=True)
         return df
 
-    def removeRowByIndex(self, df, index_row):
+    def remove_row_by_index(self, df, index_row):
         """
         Removes a row from a DataFrame by its index.
 
@@ -342,7 +339,7 @@ class RowMixin:
         return df
 
     # Also include the row-related methods that lived in the original class body
-    def removeEmptyRows(self, df):
+    def remove_empty_rows(self, df):
         """
         Removes rows that contain only NaN (Not a Number) values from a DataFrame and resets the index.
 
@@ -362,7 +359,7 @@ class RowMixin:
         df = df.drop(columns=["index"], errors="ignore")
         return df
 
-    def fillForwardRowValues(self, df, columnNames=[]):
+    def fill_forward_row_values(self, df, columnNames=[]):
         """
         Fills forward missing values in specified columns of a DataFrame.
 
@@ -389,7 +386,7 @@ class RowMixin:
                 df[cName] = df[cName].ffill()
         return df
 
-    def setHeaderAsARow(self, df):
+    def set_header_as_a_row(self, df):
         """
         Moves the current header of a DataFrame to a new row at the top.
 
@@ -409,7 +406,7 @@ class RowMixin:
         df = df.sort_index().reset_index(drop=True)  # Sort by index and reset it
         return df
 
-    def setRowAsHeader(self, df, index_row, uppercase=False, char_space_to=" "):
+    def set_row_as_header(self, df, index_row, uppercase=False, char_space_to=" "):
         """
         Sets a specified row as the new header of a DataFrame.
 
@@ -431,8 +428,8 @@ class RowMixin:
         new_header = pd.DataFrame(
             df.values[index_row]
         ).T  # Transpose to get a single row DataFrame for headers
-        new_header = self.removeAllCRLF(new_header)  # Remove CR/LF characters
-        new_header = self.stripAll(new_header)  # Remove leading/trailing whitespace
+        new_header = self.remove_all_crlf(new_header)  # Remove CR/LF characters
+        new_header = self.strip_all(new_header)  # Remove leading/trailing whitespace
         if uppercase:
             new_header = new_header.apply(
                 lambda x: x.astype(str).str.upper()
@@ -443,7 +440,7 @@ class RowMixin:
         df = df.drop(index_row).reset_index(drop=True)  # Remove the old header row and reset index
         return df
 
-    def setRowAsHeaderByValue(
+    def set_row_as_header_by_value(
         self, df, column_to_search, value_to_match, uppercase=False, char_space_to=" "
     ):
         """
@@ -472,10 +469,10 @@ class RowMixin:
             df[column_to_search] == value_to_match
         ].tolist()  # Get the index as a list
         if index_row:  # Check if a match was found
-            df = self.setRowAsHeader(df, index_row[0], uppercase, char_space_to)
+            df = self.set_row_as_header(df, index_row[0], uppercase, char_space_to)
         return df
 
-    def addHeaderAsARow(self, df):
+    def add_header_as_a_row(self, df):
         """
         Adds the current header of a DataFrame as a new row at the top.
 
@@ -512,7 +509,7 @@ class RowMixin:
             DataFrame is created, so the original DataFrame is not modified in place.
         """
         df = df.transpose().reset_index(drop=True)  # Transpose and reset index
-        df = self.setRowAsHeader(
+        df = self.set_row_as_header(
             df, index_row=0, uppercase=True, char_space_to="_"
         )  # Set first row as header
         return df

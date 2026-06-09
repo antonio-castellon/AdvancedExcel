@@ -108,7 +108,7 @@ class ReshapeMixin:
         ]  # Reorder columns
         return wide_df
 
-    def mergeListDataFrames(self, df_list, column_id_name="GROUP_ID"):
+    def merge_list_dataframes(self, df_list, column_id_name="GROUP_ID"):
         """
         Merges a list of DataFrames into a single DataFrame and assigns group IDs.
 

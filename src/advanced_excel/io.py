@@ -72,7 +72,7 @@ class IOMixin:
         self.sheets.clear()
         return False
 
-    def getSheet(self, sheetname):
+    def get_sheet(self, sheetname):
         """
         Retrieves a specific sheet from the loaded Excel file as a pandas DataFrame.
 
@@ -87,7 +87,7 @@ class IOMixin:
         else:
             return None
 
-    def getSheetNames(self):
+    def get_sheet_names(self):
         """
         Returns a list of all sheet names present in the loaded Excel file.
 

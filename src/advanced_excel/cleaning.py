@@ -10,7 +10,7 @@ class CleaningMixin:
     Includes replace*, strip, case, rename, numeric conversion helpers, etc.
     """
 
-    def replaceNaNInColumnByNaNStrings(self, df, columnName):
+    def replace_nan_in_column_by_nan_strings(self, df, columnName):
         """
         Replaces NaN (Not a Number) values in a specified column of a DataFrame with the string "NA".
 
@@ -29,7 +29,7 @@ class CleaningMixin:
         df.loc[:, columnName] = df[columnName].fillna("NA")
         return df
 
-    def replaceNaNStrings(self, df):
+    def replace_nan_strings(self, df):
         """
         Replaces string representations of NaN values with actual NaN values in a DataFrame.
 
@@ -54,7 +54,7 @@ class CleaningMixin:
         )
         return df
 
-    def stripAll(self, df):
+    def strip_all(self, df):
         """
         Removes leading and trailing whitespace from all string values in a DataFrame.
 
@@ -71,7 +71,7 @@ class CleaningMixin:
         df = df.replace(to_replace=r"^\s*(.*?)\s*$", value=r"\1", regex=True)
         return df
 
-    def removeAllCRLF(self, df, byValue=""):
+    def remove_all_crlf(self, df, byValue=""):
         """
         Removes carriage return (CR) and line feed (LF) characters from string values in a DataFrame.
 
@@ -92,7 +92,7 @@ class CleaningMixin:
             df = df.replace({byValue + byValue: byValue}, regex=True)  # Replace double byValue
         return df
 
-    def replaceByDictionary(self, df, dictionary, column_to_apply):
+    def replace_by_dictionary(self, df, dictionary, column_to_apply):
         """
         Replaces values in a specified column of a DataFrame using a dictionary mapping.
 
@@ -116,7 +116,7 @@ class CleaningMixin:
         )
         return df
 
-    def replaceAll(
+    def replace_all(
         self, df, to_replace, replace_by, columns_to_clean=None, columns_not_to_clean=None
     ):
         """
@@ -164,7 +164,7 @@ class CleaningMixin:
 
         return df
 
-    def replaceAllByList(self, df, to_replace, columns_to_clean=None, columns_not_to_clean=None):
+    def replace_all_by_list(self, df, to_replace, columns_to_clean=None, columns_not_to_clean=None):
         """
         Replaces values in a DataFrame using a list of (pattern, replacement) tuples.
 
@@ -190,11 +190,11 @@ class CleaningMixin:
             pattern,
             replacement,
         ) in to_replace:  # Iterate through the list of (pattern, replacement) tuples
-            df = self.replaceAll(df, pattern, replacement, columns_to_clean, columns_not_to_clean)
+            df = self.replace_all(df, pattern, replacement, columns_to_clean, columns_not_to_clean)
 
         return df
 
-    def replaceSpacesBySeparator(
+    def replace_spaces_by_separator(
         self, df, separator=";", columns_to_clean=None, columns_not_to_clean=None
     ):
         """
@@ -241,7 +241,7 @@ class CleaningMixin:
 
         return df
 
-    def transformAsNumeric(self, df, columnsToApply=None, columnsToAvoid=None, errors="coerce"):
+    def transform_as_numeric(self, df, columnsToApply=None, columnsToAvoid=None, errors="coerce"):
         """
         Transforms specified columns in a DataFrame to numeric type, handling errors.
 
@@ -284,7 +284,7 @@ class CleaningMixin:
         df[columns_to_convert] = df[columns_to_convert].apply(pd.to_numeric, errors=errors, axis=1)
         return df
 
-    def fillColumnsWithLeftValue(self, df, index_row):
+    def fill_columns_with_left_value(self, df, index_row):
         """
         Fills NaN values in a row with the value from the nearest cell to the left.
 
@@ -314,7 +314,7 @@ class CleaningMixin:
 
         return df
 
-    def renameHeaders(self, df, dictionary):
+    def rename_headers(self, df, dictionary):
         """
         Renames columns using a dictionary mapping.
 
@@ -331,7 +331,7 @@ class CleaningMixin:
         df.rename(columns=dictionary, inplace=True)
         return df
 
-    def renameHeadersByRegExp(self, df, regexp, value=""):
+    def rename_headers_by_regexp(self, df, regexp, value=""):
         """
         Renames columns using a regular expression substitution.
 
@@ -351,7 +351,7 @@ class CleaningMixin:
         df = df.rename(columns=lambda x: re.sub(regexp, value, x))
         return df
 
-    def renameHeadersByRegExpList(self, df, listOfRegExp, value=""):
+    def rename_headers_by_regexp_list(self, df, listOfRegExp, value=""):
         """
         Renames columns using a list of regular expression substitutions.
 
@@ -369,10 +369,10 @@ class CleaningMixin:
             DataFrame is created, so the original DataFrame is not modified in place.
         """
         for regexp in listOfRegExp:
-            df = self.renameHeadersByRegExp(df, regexp, value)
+            df = self.rename_headers_by_regexp(df, regexp, value)
         return df
 
-    def caseHeaders(self, df, uppercase=True):
+    def case_headers(self, df, uppercase=True):
         """
         Converts column names to uppercase or lowercase.
 
@@ -389,7 +389,7 @@ class CleaningMixin:
         df.columns = df.columns.str.upper() if uppercase else df.columns.str.lower()
         return df
 
-    def caseColumnValues(self, df, columnName=None, title=False, uppercase=True):
+    def case_column_values(self, df, columnName=None, title=False, uppercase=True):
         """
         Converts values in a specified column to title case, uppercase, or lowercase.
 
@@ -408,7 +408,7 @@ class CleaningMixin:
             pandas.DataFrame: The modified DataFrame (the modification is done in place).
         """
         if columnName is not None:
-            df = self.replaceNaNInColumnByNaNStrings(df, columnName)  # Handle potential NaN values
+            df = self.replace_nan_in_column_by_nan_strings(df, columnName)  # Handle potential NaN values
             df.loc[:, columnName] = df[columnName].str.strip()  # Remove leading/trailing whitespace
 
             if title:

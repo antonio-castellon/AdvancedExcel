@@ -5,7 +5,7 @@ class BlockTableMixin:
     This is the core of the "advanced" multi-table Excel handling.
     """
 
-    def getAllTables(self, _sheet, mincol=3):
+    def get_all_tables(self, _sheet, mincol=3):
         """
         Identifies and extracts table-like structures from a sheet.
 
@@ -46,7 +46,7 @@ class BlockTableMixin:
 
         return allTables
 
-    def getDataFrameBlocksByKeyName(self, df, key_name):
+    def get_dataframe_blocks_by_key_name(self, df, key_name):
         """used for sheet that contains different blocks of information,
         it splits the all data sheet into splited dataframes to be parser later on
         The Split is using the recognition of the first value on a cell that is repeated at the beginning
@@ -54,7 +54,7 @@ class BlockTableMixin:
 
         allDfBlocks = []
 
-        identified_rows = self.getAllRowsFromKey(df, key_name)
+        identified_rows = self.get_all_rows_from_key(df, key_name)
         list_index_of_rows = list(map(lambda x: x["row_index"], identified_rows))
 
         for index in range(len(list_index_of_rows)):
@@ -71,7 +71,7 @@ class BlockTableMixin:
 
         return allDfBlocks
 
-    def getDataFrameBlocksByKeyColumn(self, df, key_column):
+    def get_dataframe_blocks_by_key_column(self, df, key_column):
         """
         Splits a DataFrame into blocks based on occurrences of a keyname.
 

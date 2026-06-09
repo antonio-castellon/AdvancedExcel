@@ -11,7 +11,7 @@ class LookupMixin:
     # as class attributes (ROW_INDEX, COL_INDEX, DATA). Internally we use the
     # literal strings for the dict keys so the mixins stay self-contained.
 
-    def getNextValue(self, _sheet, keyname, limitoffset=0):
+    def get_next_value(self, _sheet, keyname, limitoffset=0):
         """
         Finds all occurrences of a keyname within a sheet and retrieves the values
         immediately to the right of each occurrence, within a specified offset limit.
@@ -42,14 +42,14 @@ class LookupMixin:
         # different typos or to be case-sensitive , that's why we use a non optimized way to search inside
         # (avoiding generating another dataframe with all data in lowercase
         #
-        data_rows = self.getAllRowsFromKey(_sheet, keyname)
+        data_rows = self.get_all_rows_from_key(_sheet, keyname)
         allResults = []
         for row in data_rows:
             allResults.append(self._getNextValue(row["data"], row["col_index"] + 1, limitoffset))
 
         return allResults
 
-    def getNextValueFromKeyList(self, _sheet, keynames=[], limitoffset=0):
+    def get_next_value_from_key_list(self, _sheet, keynames=[], limitoffset=0):
         """
         Searches a sheet for the first occurrence of any keyname from a given list
         and returns the value immediately to its right, within a specified offset limit.
@@ -76,7 +76,7 @@ class LookupMixin:
         """
         allResults = []
         for keyname in keynames:
-            data_rows = self.getAllRowsFromKey(_sheet, keyname)
+            data_rows = self.get_all_rows_from_key(_sheet, keyname)
             if len(data_rows) > 0:
                 row = data_rows[0]
                 allResults.append(
@@ -86,7 +86,7 @@ class LookupMixin:
 
         return allResults
 
-    def getAllRowsFromKey(self, _sheet, keyname):
+    def get_all_rows_from_key(self, _sheet, keyname):
         """
         Finds all rows in a sheet that contain a specific keyname (case-insensitive)
         and returns information about their location.
@@ -130,7 +130,7 @@ class LookupMixin:
 
         return dataRows
 
-    def getValueFromPosition(self, _sheet, col, row, as_string=True):
+    def get_value_from_position(self, _sheet, col, row, as_string=True):
         """
         Retrieves a value from a specific cell in a sheet using its column and row indices.
 
@@ -173,7 +173,7 @@ class LookupMixin:
             else:
                 return oValue
 
-    def getAllPairValues(self, _sheet):
+    def get_all_pair_values(self, _sheet):
         """
         Extracts key-value pairs from a sheet, assuming a maximum of one pair per row.
 

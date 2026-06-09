@@ -8,7 +8,7 @@ class ColumnMixin:
     moving columns, setting columns to numeric, etc.
     """
 
-    def removeEmptyColumns(self, df):
+    def remove_empty_columns(self, df):
         """
         Removes empty or entirely whitespace-filled columns from a DataFrame.
 
@@ -28,7 +28,7 @@ class ColumnMixin:
 
         return df
 
-    def removeAllColumnsWhereAnyRowHasAValue(self, df, value):
+    def remove_all_columns_where_any_row_has_a_value(self, df, value):
         """
         Removes columns from a DataFrame where *any* row contains a specified value.
 
@@ -45,7 +45,7 @@ class ColumnMixin:
         df = df.loc[:, ~(df == value).any()]  # Remove columns where any row has the value
         return df
 
-    def removeAllColumnsWhereALLRowHasAValue(self, df, value):
+    def remove_all_columns_where_all_row_has_a_value(self, df, value):
         """
         Removes columns from a DataFrame where *all* rows contain a specified value.
 
@@ -62,7 +62,7 @@ class ColumnMixin:
         df = df.loc[:, ~(df == value).all()]  # Remove columns where all rows have the value
         return df
 
-    def removeAllColumnsWhereALLRowAreEmpty(self, df):
+    def remove_all_columns_where_all_row_are_empty(self, df):
         """
         Removes columns from a DataFrame where *all* rows are empty (NaN).
 
@@ -78,7 +78,7 @@ class ColumnMixin:
         df = df.dropna(how="all", axis=1)  # Remove columns where all values are NaN
         return df
 
-    def removeAllColumnsBeforeColumnValueHeader(self, df, header_value, skip_first=False):
+    def remove_all_columns_before_column_value_header(self, df, header_value, skip_first=False):
         """
         Removes columns from a DataFrame *before* a column with a specified header value.
 
@@ -116,7 +116,7 @@ class ColumnMixin:
             df = df.reset_index(drop=True)
         return df
 
-    def removeAllColumnsAfterColumnValueHeader(self, df, header_value, skip_first=False):
+    def remove_all_columns_after_column_value_header(self, df, header_value, skip_first=False):
         """
         Removes columns from a DataFrame *after* a column with a specified header value.
 
@@ -155,7 +155,7 @@ class ColumnMixin:
             df = df.reset_index(drop=True)
         return df
 
-    def moveToFirst(self, df, column_to_move_ahead):
+    def move_to_first(self, df, column_to_move_ahead):
         """
         Moves a specified column to the first position in a DataFrame.
 
@@ -178,7 +178,7 @@ class ColumnMixin:
         df.insert(0, column_to_move_ahead, col2move)  # Insert the column at the beginning
         return df
 
-    def setColumn2Numeric(self, df, columnName):
+    def set_column_to_numeric(self, df, columnName):
         """
         Converts a specified column in a DataFrame to numeric type.
 
@@ -196,7 +196,7 @@ class ColumnMixin:
         df[columnName] = pd.to_numeric(df[columnName])
         return df
 
-    def setListOfColumns2Numeric(self, df, columnNames=None):
+    def set_list_of_columns_to_numeric(self, df, columnNames=None):
         """
         Converts a list of columns in a DataFrame to numeric type.
 
@@ -217,7 +217,7 @@ class ColumnMixin:
             df[c_name] = pd.to_numeric(df[c_name])
         return df
 
-    def removeColumnsByNameNaN(self, df):
+    def remove_columns_by_name_nan(self, df):
         """
         Removes columns with NaN or "NAN" as their name.
 
@@ -234,7 +234,7 @@ class ColumnMixin:
         df = df.drop(columns=["NAN"], errors="ignore")  # Remove column named "NAN" (if it exists)
         return df
 
-    def removeColumnByName(self, df, key_name, if_column_exists=None):
+    def remove_column_by_name(self, df, key_name, if_column_exists=None):
         """
         Removes columns from a DataFrame based on a regular expression.
 
@@ -259,7 +259,7 @@ class ColumnMixin:
             )  # Drop the columns, ignoring errors if they don't exist.
         return df
 
-    def removeColumnsByNames(self, df, column_names):
+    def remove_columns_by_names(self, df, column_names):
         """
         Removes multiple columns from a DataFrame based on a list of names.
 
@@ -281,7 +281,7 @@ class ColumnMixin:
         )  # Drop the columns.
         return df
 
-    def removeAllColumnsExceptListOfColumnNames(self, df, column_names):
+    def remove_all_columns_except_list_of_column_names(self, df, column_names):
         """
         Removes all columns from a DataFrame *except* those in a specified list.
 
@@ -300,7 +300,7 @@ class ColumnMixin:
         )  # Drop columns not in the list.
         return df
 
-    def mergeColumns(self, df, init_col, end_col, separator, name_of_column):
+    def merge_columns(self, df, init_col, end_col, separator, name_of_column):
         """
         Merges the content of multiple columns into a single column.
 
@@ -328,7 +328,7 @@ class ColumnMixin:
         df = df.drop(columns=columns_to_drop, errors="ignore")  # Remove the original columns
         return df
 
-    def mergeColumnsByName(
+    def merge_columns_by_name(
         self, df, column_destine, column_left, column_right, remove_origin=True, separator="_"
     ):
         """
@@ -359,7 +359,7 @@ class ColumnMixin:
             )  # Remove original columns
         return df
 
-    def splitOnColumns(self, df, column_to_split, split_character="_", list_of_columns=None):
+    def split_on_columns(self, df, column_to_split, split_character="_", list_of_columns=None):
         """
         Splits a column into multiple columns based on a delimiter.
 
@@ -390,7 +390,7 @@ class ColumnMixin:
             df[list_of_columns] = df[column_to_split].str.split(split_character, expand=True)
         return df
 
-    def splitIn2ColumnsRight(
+    def split_in_2_columns_right(
         self, df, column_to_split, columns_to_generate=None, split_character="_"
     ):
         """
@@ -421,7 +421,7 @@ class ColumnMixin:
             )
         return df
 
-    def splitIn2ColumnsLeft(
+    def split_in_2_columns_left(
         self, df, column_to_split, columns_to_generate=None, split_character="_"
     ):
         """
