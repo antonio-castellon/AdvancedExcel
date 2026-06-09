@@ -1,6 +1,8 @@
 ## AdvancedExcel: Simplifying Excel Data Processing in Python
 
-The `AdvancedExcel` class provides a powerful and convenient way to interact with Excel files in Python.  It streamlines common Excel data processing tasks, from reading and extracting data to cleaning, transforming, and manipulating it using pandas DataFrames.  This class aims to reduce the boilerplate code often associated with Excel handling, making your data analysis workflows more efficient and readable.
+**v2.0+ note:** The public API now uses PEP 8 `snake_case` method names (e.g. `get_sheet`, `remove_empty_rows`, `get_dataframe_blocks_by_key_name`). This is a breaking change from v1.x.
+
+The `AdvancedExcel` class provides a powerful and convenient way to interact with Excel files in Python. It streamlines common Excel data processing tasks, from reading and extracting data to cleaning, transforming, and manipulating it using pandas DataFrames. This class aims to reduce the boilerplate code often associated with Excel handling, making your data analysis workflows more efficient and readable.
 
 **Key Strengths:**
 
@@ -50,7 +52,7 @@ pip install -e ".[dev,sspipe]"
 
 ## Dependencies
 
-Core dependencies are declared in `pyproject.toml`. The old `requirements.txt` now only lists the essentials.
+Core dependencies (pandas, openpyxl, etc.) are declared in `pyproject.toml`. Optional extras are available for `sspipe` support and development.
 
 ## Usage
 
@@ -65,7 +67,7 @@ result = data.get_next_value(sheet, "Study Number")
 print(result)
 ```
 
-> Note: The library preserves the original `from advanced_excel import AdvancedExcel` import path for backward compatibility.
+> Note: The recommended import is `from advanced_excel import AdvancedExcel` (this is the stable API as of v2.0).
 
 ### Example using sspipe for complex chaining (requires `pip install "advanced-excel[sspipe]"`):
 
@@ -115,13 +117,13 @@ for dblock in results:
         dblock
         | p(data.get_dataframe_blocks_by_key_name, "Batch Number")
         | (lambda blocks: blocks[0] if blocks else pd.DataFrame())
-        | p(data.replaceNaNStrings)
+        | p(data.replace_nan_strings)
         | p(data.remove_empty_rows)
-        | p(data.mergeRows, 0, 2)
+        | p(data.merge_rows, 0, 2)
         | p(data.set_row_as_header, 0)
-        | p(data.removeRowsIfUniqueValueOnBotton, 2)
+        | p(data.remove_rows_if_unique_value_on_bottom, 2)
         | p(data.merge_columns, 1, 2, '_', 'SAMPLE_REPLICATE')
-        | p(data.removeColumnByName, "Sample #_Replicat #")
+        | p(data.remove_column_by_name, "Sample #_Replicat #")
     )
     all_tables.append(table)
 ```
@@ -141,15 +143,15 @@ results = (
     | p(data.case_headers)
     | p(data.rename_headers, columns_to_rename)
     | p(data.strip_all)
-    | p(data.removeColumnByName, r"^T\d+$")
-    | p(data.removeColumnByName, r"^T\d+\.\d+$")
-    | p(data.removeAllCRLF, ";")
-    | p(data.replaceNaNStrings)
-    | p(data.replaceSpacesBySeparator, ";", [], columns_not_to_clean)
+    | p(data.remove_column_by_name, r"^T\d+$")
+    | p(data.remove_column_by_name, r"^T\d+\.\d+$")
+    | p(data.remove_all_crlf, ";")
+    | p(data.replace_nan_strings)
+    | p(data.replace_spaces_by_separator, ";", [], columns_not_to_clean)
     | p(data.replace_all, ",;", ";", [], columns_not_to_clean)
     | p(data.replace_all, "tbd", "TBD", [], [])
-    # | p(data.replaceByDictionary, unit_map, "UNIT")
-    | p(data.caseColumnValues, "PARAMETER", title=True)
-    # | p(data.replaceByDictionary, variable_map, "PARAMETER")
+    # | p(data.replace_by_dictionary, unit_map, "UNIT")
+    | p(data.case_column_values, "PARAMETER", title=True)
+    # | p(data.replace_by_dictionary, variable_map, "PARAMETER")
 )
 ```
