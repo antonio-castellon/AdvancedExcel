@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "advanced-excel"
-version = "1.1.0"
+version = "1.0.0"
 description = "Advanced Excel data processing and manipulation library for Python"
 readme = "README.md"
 license = {text = "MIT"}
@@ -58,6 +58,8 @@ Issues = "https://github.com/antonio-castellon/AdvancedExcel/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["advanced_excel*"]  # Standard lowercase package name for Python/PyPI compatibility
+
 
 [tool.setuptools.package-data]
 "*" = ["py.typed"]
