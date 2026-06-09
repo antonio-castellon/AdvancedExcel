@@ -99,20 +99,16 @@ class ColumnMixin:
         """
         header_was_found = False
         index_column = -1
-        index = 0
-        for cnames in df.columns:
-            if header_was_found and index_column == -1:
-                index_column = index
-            elif cnames == header_value:
+        for idx, cname in enumerate(df.columns):
+            if cname == header_value:
                 if not skip_first:
                     header_was_found = True
+                    index_column = idx  # position of the target column
+                    break
                 else:
                     skip_first = False
-            index += 1  # More Pythonic increment
         if index_column != -1:
-            df = df.iloc[
-                :, range(index_column)
-            ]  # Keep columns up to (but not including) the target column
+            df = df.iloc[:, :index_column]  # strictly before the target (excluding it)
             df = df.reset_index(drop=True)
         return df
 
@@ -137,21 +133,16 @@ class ColumnMixin:
         """
         header_was_found = False
         index_column = -1
-        index = 0
-        for cnames in df.columns:
-            if header_was_found and index_column == -1:
-                index_column = index
-            elif cnames == header_value:
+        for idx, cname in enumerate(df.columns):
+            if cname == header_value:
                 if not skip_first:
                     header_was_found = True
+                    index_column = idx  # position of the target column
+                    break
                 else:
                     skip_first = False
-            index += 1  # More Pythonic increment
-
         if index_column != -1:
-            df = df.iloc[
-                :, range(0, index_column + 1)
-            ]  # Keep columns from the beginning up to and including the target column.
+            df = df.iloc[:, : index_column + 1]  # up to and including the target
             df = df.reset_index(drop=True)
         return df
 

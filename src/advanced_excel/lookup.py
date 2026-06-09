@@ -195,7 +195,8 @@ class LookupMixin:
         for row in range(_sheet.shape[0]):
             the_row = _sheet.loc[row].dropna()
             if len(the_row) == 2:
-                pairKeyValues[the_row[0]] = the_row[1]
+                # iloc to avoid FutureWarning on positional access after dropna on some indexes
+                pairKeyValues[the_row.iloc[0]] = the_row.iloc[1]
 
         return pairKeyValues
 

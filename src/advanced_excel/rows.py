@@ -171,12 +171,16 @@ class RowMixin:
             DataFrame is created, so the original DataFrame is not modified in place.
         """
         indexes_to_remove = []
+        n = len(df)
         for index in range(init_row, end_row + 1):
+            if index >= n:
+                break
             num_values = len(df.loc[index].dropna().unique())  # Count unique non-NaN values
             if num_values == 1:
                 indexes_to_remove.append(index)
 
-        df = df.drop(indexes_to_remove)
+        if indexes_to_remove:
+            df = df.drop(indexes_to_remove)
         df = df.reset_index(drop=True)
         return df
 
