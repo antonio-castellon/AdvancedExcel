@@ -30,93 +30,126 @@ Update PIP
 `py -m pip install -U pip`
 
 
+## Installation
+
+```bash
+pip install advanced-excel
+```
+
+For the functional piping examples using `sspipe`:
+
+```bash
+pip install "advanced-excel[sspipe]"
+```
+
+For development:
+
+```bash
+pip install -e ".[dev,sspipe]"
+```
+
 ## Dependencies
 
-``py -m pip install --upgrade setuptools wheel``
-
-``py -m pip install -r ./requirements.txt``
+Core dependencies are declared in `pyproject.toml`. The old `requirements.txt` now only lists the essentials.
 
 ## Usage
 
 ### Basic usage 
 
-```python 
+```python
+from AdvancedExcel import AdvancedExcel
 
-    from AdvancedExcel import AdvancedExcel
-
-    data = AdvancedExcel("simple_excel.xlsx") 
-    result = data.getSheet("Data") | p(data.getNextValue, "Study Number")
+data = AdvancedExcel("simple_excel.xlsx")
+sheet = data.getSheet("Data")
+result = data.getNextValue(sheet, "Study Number")
+print(result)
 ```
 
-### Example using sspipe for complex chaining:
+> Note: The library preserves the original `from AdvancedExcel import AdvancedExcel` import path for backward compatibility.
+
+### Example using sspipe for complex chaining (requires `pip install "advanced-excel[sspipe]"`):
+
 ```python
-    
-    from sspipe import Pipe, p
-    from pandas import pd
-    from AdvancedExcel import AdvancedExcel
-    
-    excel_processor = AdvancedExcel("complex_excel.xlsx")
-    final_df_chained = (
-                        excel_processor.getSheet("Raw data")
-                        | p(excel_processor.removeEmptyRows)
-                        | p(excel_processor.setColumn2Numeric, columnName="Quantity")
-                        | p(pd.merge, excel_processor.getSheet("Sheet1") 
-                                        | p(excel_processor.removeEmptyRows) 
-                                        | p(excel_processor.renameHeaders, {"OldName": "CategoryName"}), on="ProductID", how="left")
-                        | p(pd.merge, excel_processor.getSheet("Sheet2") 
-                                        | p(excel_processor.removeEmptyRows) 
-                                        | p(excel_processor.stripAll) 
-                                        | p(excel_processor.removeDuplicates), left_index=True, right_index=True) # Example merge using indexes
-                        | p(lambda df: pd.concat([df, excel_processor.read_excel("complex_excel.xlsx", "Sheet3") | p(excel_processor.transpose)], axis=1))
-                        )
+from sspipe import p
+import pandas as pd
+from AdvancedExcel import AdvancedExcel
+
+excel_processor = AdvancedExcel("complex_excel.xlsx")
+
+raw = excel_processor.getSheet("Raw data")
+sheet1 = excel_processor.getSheet("Sheet1")
+sheet2 = excel_processor.getSheet("Sheet2")
+
+final_df_chained = (
+    raw
+    | p(excel_processor.removeEmptyRows)
+    | p(excel_processor.setColumn2Numeric, columnName="Quantity")
+    | p(pd.merge,
+        sheet1
+        | p(excel_processor.removeEmptyRows)
+        | p(excel_processor.renameHeaders, {"OldName": "CategoryName"}),
+        on="ProductID", how="left")
+    | p(pd.merge,
+        sheet2
+        | p(excel_processor.removeEmptyRows)
+        | p(excel_processor.stripAll)
+        | p(excel_processor.removeDuplicates),
+        left_index=True, right_index=True)
+)
 ```
-### Another example of usage on a complex Excel:
-
-These are more examples of a datasheet that contains multiple tables, extracting all values from each table as a dataframe
+### Another example of usage on a complex Excel (multiple tables per sheet):
 
 ```python
-      from AdvancedExcel import AdvancedExcel
+from AdvancedExcel import AdvancedExcel
+from sspipe import p   # optional, for nice chaining
 
-      data = AdvancedExcel("studies_excel.xlsx")
-      results = data.getSheet("Raw data") | p(data.getDataFrameBlocksByKeyName, "Batch Number")
-      allTables = []
-      for dblock in results: 
-            study_num = dblock | p(data.getNextValue,"Study No") 
-            plan_num = dblock | p(data.getNextValue,"Plan No")
-            table = dblock | p(data.getDataFrameBlocksByKeyName,"Batch Number") \
-                           | px[0] \
-                           | p(data.replaceNaNStrings) \
-                           | p(data.removeEmptyRows) \
-                           | p(data.mergeRows, 0, 2) \
-                           | p(data.setRowAsHeader, 0) \
-                           | p(data.removeRowsIfUniqueValueOnBotton, 2) \
-                           | p(data.mergeColumns, 1, 2, '_', 'SAMPLE_REPLICATE') \
-                           | p(data.removeColumnByName, "Sample #_Replicat #")
-            allTables.append(table)
+data = AdvancedExcel("studies_excel.xlsx")
+results = data.getSheet("Raw data") | p(data.getDataFrameBlocksByKeyName, "Batch Number")
+
+all_tables = []
+for dblock in results:
+    study_num = data.getNextValue(dblock, "Study No")
+    plan_num = data.getNextValue(dblock, "Plan No")
+
+    table = (
+        dblock
+        | p(data.getDataFrameBlocksByKeyName, "Batch Number")
+        | (lambda blocks: blocks[0] if blocks else pd.DataFrame())
+        | p(data.replaceNaNStrings)
+        | p(data.removeEmptyRows)
+        | p(data.mergeRows, 0, 2)
+        | p(data.setRowAsHeader, 0)
+        | p(data.removeRowsIfUniqueValueOnBotton, 2)
+        | p(data.mergeColumns, 1, 2, '_', 'SAMPLE_REPLICATE')
+        | p(data.removeColumnByName, "Sample #_Replicat #")
+    )
+    all_tables.append(table)
 ```
 
 ```python
-        from AdvancedExcel import AdvancedExcel
+from AdvancedExcel import AdvancedExcel
+from sspipe import p
+import pandas as pd
 
-        data = AdvancedExcel("studies_excel.xlsx")
-        
-        columns_to_rename = { "PLATEFORM": "PLATFORM" }
+data = AdvancedExcel("studies_excel.xlsx")
 
-        columns_not_to_clean_separators = ["PARAMETER"]
+columns_to_rename = {"PLATEFORM": "PLATFORM"}
+columns_not_to_clean = ["PARAMETER"]
 
-        results = data.getSheet("data_raw") \
-                     | p(data.caseHeaders) \
-                     | p(data.renameHeaders, columns_to_rename) \
-                     | p(data.stripAll) \
-                     | p(data.removeColumnByName, r"^T\d+$") \
-                     | p(data.removeColumnByName, r"^T\d+\.\d+$") \
-                     | p(data.removeAllCRLF, ";") \
-                     | p(data.replaceNaNStrings) \
-                     | p(data.replaceSpacesBySeparator, ";", [], columns_not_to_clean_separators) \
-                     | p(data.replaceAll, ",;", ";", [], columns_not_to_clean_separators) \
-                     | p(data.replaceAll, "tbd", "TBD", [], []) \
-                     | p(data.replaceByDictionary, config["replace"]["values"]["units"], "UNIT") \
-                     | p(data.caseColumnValues, "PARAMETER", title=True) \
-                     | p(data.replaceByDictionary, config["replace"]["values"]["variables"], "PARAMETER")
-
+results = (
+    data.getSheet("data_raw")
+    | p(data.caseHeaders)
+    | p(data.renameHeaders, columns_to_rename)
+    | p(data.stripAll)
+    | p(data.removeColumnByName, r"^T\d+$")
+    | p(data.removeColumnByName, r"^T\d+\.\d+$")
+    | p(data.removeAllCRLF, ";")
+    | p(data.replaceNaNStrings)
+    | p(data.replaceSpacesBySeparator, ";", [], columns_not_to_clean)
+    | p(data.replaceAll, ",;", ";", [], columns_not_to_clean)
+    | p(data.replaceAll, "tbd", "TBD", [], [])
+    # | p(data.replaceByDictionary, unit_map, "UNIT")
+    | p(data.caseColumnValues, "PARAMETER", title=True)
+    # | p(data.replaceByDictionary, variable_map, "PARAMETER")
+)
 ```

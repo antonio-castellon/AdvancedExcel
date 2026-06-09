@@ -14,8 +14,6 @@ importable after `pip install -e .`. The logic has been validated via
 composition tests during the refactor.
 """
 
-import os
-import tempfile
 import pandas as pd
 import pytest
 
@@ -29,6 +27,7 @@ except ImportError:
     # Fallback for direct source execution in some environments
     import sys
     from pathlib import Path
+
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
     from AdvancedExcel import AdvancedExcel
 
@@ -36,13 +35,15 @@ except ImportError:
 @pytest.fixture
 def sample_df():
     """Basic sample DataFrame used across many tests."""
-    return pd.DataFrame({
-        "A": [1, 2, None, 4, 5],
-        "B": [" x ", "Y", " z ", "W", "v"],
-        "C": ["foo", "foo", "bar", "bar", "baz"],
-        "D": [10.0, 20.0, 30.0, None, 50.0],
-        "K": ["Batch Number", "x", "y", "Batch Number", "p"],
-    })
+    return pd.DataFrame(
+        {
+            "A": [1, 2, None, 4, 5],
+            "B": [" x ", "Y", " z ", "W", "v"],
+            "C": ["foo", "foo", "bar", "bar", "baz"],
+            "D": [10.0, 20.0, 30.0, None, 50.0],
+            "K": ["Batch Number", "x", "y", "Batch Number", "p"],
+        }
+    )
 
 
 @pytest.fixture
@@ -61,35 +62,78 @@ def test_all_expected_public_methods_exist(ae):
     """Ensure no public method was lost during the split."""
     expected = [
         # io / core
-        "getSheet", "getSheetNames",
+        "getSheet",
+        "getSheetNames",
         # lookup
-        "getNextValue", "getNextValueFromKeyList", "getAllRowsFromKey",
-        "getValueFromPosition", "getAllPairValues",
+        "getNextValue",
+        "getNextValueFromKeyList",
+        "getAllRowsFromKey",
+        "getValueFromPosition",
+        "getAllPairValues",
         # blocks / entities / tables
-        "getAllTables", "getDataFrameBlocksByKeyName", "getDataFrameBlocksByKeyColumn",
+        "getAllTables",
+        "getDataFrameBlocksByKeyName",
+        "getDataFrameBlocksByKeyColumn",
         # rows
-        "removeEmptyRows", "removeDuplicates", "removeRowsByRegEx", "removeRowsNotInRegEx",
-        "removeRowsWhereValueInColumnIsEmpty", "removeRowsWhereValueIsEqualInColumn",
-        "mergeRows", "removeRowIfUniqueValue", "removeRowsIfUniqueValueOnTop",
-        "removeRowsIfUniqueValueOnBotton", "removeAllRowsFromAColumnNameWhenHasValue",
-        "removeAllRowsFromAColumnWhenHasValue", "removeAllRowsBeforeColumnValue",
-        "removeRowByIndex", "fillForwardRowValues", "setHeaderAsARow", "setRowAsHeader",
-        "setRowAsHeaderByValue", "addHeaderAsARow", "transpose",
+        "removeEmptyRows",
+        "removeDuplicates",
+        "removeRowsByRegEx",
+        "removeRowsNotInRegEx",
+        "removeRowsWhereValueInColumnIsEmpty",
+        "removeRowsWhereValueIsEqualInColumn",
+        "mergeRows",
+        "removeRowIfUniqueValue",
+        "removeRowsIfUniqueValueOnTop",
+        "removeRowsIfUniqueValueOnBotton",
+        "removeAllRowsFromAColumnNameWhenHasValue",
+        "removeAllRowsFromAColumnWhenHasValue",
+        "removeAllRowsBeforeColumnValue",
+        "removeRowByIndex",
+        "fillForwardRowValues",
+        "setHeaderAsARow",
+        "setRowAsHeader",
+        "setRowAsHeaderByValue",
+        "addHeaderAsARow",
+        "transpose",
         # columns
-        "removeEmptyColumns", "removeAllColumnsWhereAnyRowHasAValue",
-        "removeAllColumnsWhereALLRowHasAValue", "removeAllColumnsWhereALLRowAreEmpty",
-        "removeAllColumnsBeforeColumnValueHeader", "removeAllColumnsAfterColumnValueHeader",
-        "moveToFirst", "setColumn2Numeric", "setListOfColumns2Numeric",
-        "removeColumnsByNameNaN", "removeColumnByName", "removeColumnsByNames",
-        "removeAllColumnsExceptListOfColumnNames", "mergeColumns", "mergeColumnsByName",
-        "splitOnColumns", "splitIn2ColumnsRight", "splitIn2ColumnsLeft",
+        "removeEmptyColumns",
+        "removeAllColumnsWhereAnyRowHasAValue",
+        "removeAllColumnsWhereALLRowHasAValue",
+        "removeAllColumnsWhereALLRowAreEmpty",
+        "removeAllColumnsBeforeColumnValueHeader",
+        "removeAllColumnsAfterColumnValueHeader",
+        "moveToFirst",
+        "setColumn2Numeric",
+        "setListOfColumns2Numeric",
+        "removeColumnsByNameNaN",
+        "removeColumnByName",
+        "removeColumnsByNames",
+        "removeAllColumnsExceptListOfColumnNames",
+        "mergeColumns",
+        "mergeColumnsByName",
+        "splitOnColumns",
+        "splitIn2ColumnsRight",
+        "splitIn2ColumnsLeft",
         # cleaning
-        "replaceNaNInColumnByNaNStrings", "replaceNaNStrings", "stripAll", "removeAllCRLF",
-        "replaceByDictionary", "replaceAll", "replaceAllByList", "replaceSpacesBySeparator",
-        "transformAsNumeric", "fillColumnsWithLeftValue", "renameHeaders",
-        "renameHeadersByRegExp", "renameHeadersByRegExpList", "caseHeaders", "caseColumnValues",
+        "replaceNaNInColumnByNaNStrings",
+        "replaceNaNStrings",
+        "stripAll",
+        "removeAllCRLF",
+        "replaceByDictionary",
+        "replaceAll",
+        "replaceAllByList",
+        "replaceSpacesBySeparator",
+        "transformAsNumeric",
+        "fillColumnsWithLeftValue",
+        "renameHeaders",
+        "renameHeadersByRegExp",
+        "renameHeadersByRegExpList",
+        "caseHeaders",
+        "caseColumnValues",
         # reshape
-        "melt", "melt_extended", "mergeListDataFrames",
+        "melt",
+        "melt_extended",
+        "mergeListDataFrames",
     ]
     for name in expected:
         assert hasattr(AdvancedExcel, name), f"Missing public method: {name}"
@@ -97,6 +141,7 @@ def test_all_expected_public_methods_exist(ae):
 
 
 # -------------------------- ROWS --------------------------
+
 
 def test_remove_empty_rows(ae, sample_df):
     df = sample_df.copy()
@@ -111,10 +156,13 @@ def test_remove_duplicates(ae):
     assert len(result) == 2
 
 
-@pytest.mark.parametrize("regex, expected_len", [
-    (r"^f", 2),   # rows where C matches ^f (foo)
-    (r"bar", 2),
-])
+@pytest.mark.parametrize(
+    "regex, expected_len",
+    [
+        (r"^f", 2),  # rows where C matches ^f (foo)
+        (r"bar", 2),
+    ],
+)
 def test_remove_rows_by_regex_variants(ae, sample_df, regex, expected_len):
     result = ae.removeRowsByRegEx(sample_df.copy(), "C", regex)
     assert len(result) == expected_len
@@ -158,7 +206,9 @@ def test_remove_row_if_unique_value_and_top_bottom(ae):
 
 def test_remove_all_rows_from_column_variants(ae):
     df = pd.DataFrame({"K": ["Batch", "x", "Batch", "y"], "V": [1, 2, 3, 4]})
-    r1 = ae.removeAllRowsFromAColumnNameWhenHasValue(df.copy(), 0, "K", "Batch", include_remove_row=True)
+    r1 = ae.removeAllRowsFromAColumnNameWhenHasValue(
+        df.copy(), 0, "K", "Batch", include_remove_row=True
+    )
     assert len(r1) == 0 or r1.iloc[0]["K"] != "Batch"
 
     r2 = ae.removeAllRowsFromAColumnWhenHasValue(df.copy(), 0, 0, "Batch", include_remove_row=False)
@@ -203,16 +253,20 @@ def test_add_header_as_row_and_transpose(ae):
 
 # -------------------------- COLUMNS --------------------------
 
+
 def test_remove_empty_columns(ae):
     df = pd.DataFrame({"A": [1, 2], "B": [None, None], "C": ["", ""]})
     result = ae.removeEmptyColumns(df.copy())
     assert list(result.columns) == ["A"]
 
 
-@pytest.mark.parametrize("method_name", [
-    "removeAllColumnsWhereAnyRowHasAValue",
-    "removeAllColumnsWhereALLRowHasAValue",
-])
+@pytest.mark.parametrize(
+    "method_name",
+    [
+        "removeAllColumnsWhereAnyRowHasAValue",
+        "removeAllColumnsWhereALLRowHasAValue",
+    ],
+)
 def test_remove_columns_by_value_variants(ae, method_name):
     df = pd.DataFrame({"A": [99, 1], "B": [99, 99], "C": [1, 2]})
     meth = getattr(ae, method_name)
@@ -282,6 +336,7 @@ def test_merge_and_split_columns(ae):
 
 # -------------------------- CLEANING --------------------------
 
+
 def test_replace_nan_variants(ae):
     df = pd.DataFrame({"C": [None, "NA", "NAN", "good"]})
     r1 = ae.replaceNaNInColumnByNaNStrings(df.copy(), "C")
@@ -304,11 +359,14 @@ def test_strip_crlf_replace_variants(ae):
     assert rep["T"].iloc[0] == "new"
 
 
-@pytest.mark.parametrize("cols_clean, cols_not, expected_change", [
-    (None, None, True),
-    (["S"], None, True),
-    (None, ["S"], False),
-])
+@pytest.mark.parametrize(
+    "cols_clean, cols_not, expected_change",
+    [
+        (None, None, True),
+        (["S"], None, True),
+        (None, ["S"], False),
+    ],
+)
 def test_replace_all_options(ae, cols_clean, cols_not, expected_change):
     df = pd.DataFrame({"S": ["foo", "bar"], "Other": ["foo", "x"]})
     res = ae.replaceAll(df.copy(), "foo", "XXX", cols_clean, cols_not)
@@ -361,6 +419,7 @@ def test_rename_and_case_variants(ae):
 
 # -------------------------- RESHAPE --------------------------
 
+
 def test_melt_variants(ae):
     df = pd.DataFrame({"Param": ["p1", "p2"], "V1": [10, 20], "V2": [30, 40]})
     m1 = ae.melt(df.copy(), "Param")
@@ -379,6 +438,7 @@ def test_merge_list_dfs(ae):
 
 # -------------------------- LOADER / BLOCKS / LOOKUP (with temp file) --------------------------
 
+
 def test_loader_and_get_sheet(tmp_path):
     # Create a small real xlsx
     df = pd.DataFrame({"Col1": [1, 2], "Col2": ["a", "b"]})
@@ -392,11 +452,21 @@ def test_loader_and_get_sheet(tmp_path):
     assert "Data" in ae.getSheetNames()
 
 
+def test_context_manager(tmp_path):
+    df = pd.DataFrame({"X": [1, 2, 3]})
+    xlsx = tmp_path / "ctx.xlsx"
+    df.to_excel(xlsx, index=False)
+
+    with AdvancedExcel(str(xlsx)) as ae:
+        s = ae.getSheet("Sheet1")
+        assert s is not None
+        assert len(s) == 3
+    # after exit, sheets cleared (current impl)
+    # (no strong assertion as it is mostly for future resource mgmt)
+
+
 def test_blocks_and_lookup(ae):
-    df = pd.DataFrame({
-        0: ["Study", "x", "Study", "y"],
-        1: [100, 101, 200, 201]
-    })
+    df = pd.DataFrame({0: ["Study", "x", "Study", "y"], 1: [100, 101, 200, 201]})
     blocks = ae.getDataFrameBlocksByKeyName(df.copy(), "Study")
     assert len(blocks) == 2
 
@@ -410,11 +480,13 @@ def test_blocks_and_lookup(ae):
 
 def test_get_all_tables(ae):
     # Simple contiguous non-empty block
-    df = pd.DataFrame({
-        0: [1, 2, None],
-        1: [3, 4, None],
-        2: [5, 6, None],
-    })
+    df = pd.DataFrame(
+        {
+            0: [1, 2, None],
+            1: [3, 4, None],
+            2: [5, 6, None],
+        }
+    )
     tables = ae.getAllTables(df, mincol=2)
     assert len(tables) >= 1
 
@@ -422,6 +494,7 @@ def test_get_all_tables(ae):
 if __name__ == "__main__":
     # Allow running as python tests/test_advanced_excel.py (basic smoke)
     import traceback
+
     print("Running basic smoke (not full pytest)...")
     try:
         test_constants_present()
@@ -430,6 +503,6 @@ if __name__ == "__main__":
         ae = AdvancedExcel.__new__(AdvancedExcel)
         assert ae.stripAll(df)["B"].iloc[0] == "x"
         print("Basic smoke passed. Use pytest for full coverage.")
-    except Exception as e:
+    except Exception:
         traceback.print_exc()
         raise

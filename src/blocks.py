@@ -1,8 +1,3 @@
-import pandas as pd
-import numpy as np
-import re
-
-
 class BlockTableMixin:
     """
     Mixin for detecting and extracting multiple tables / blocks / entities
@@ -12,25 +7,25 @@ class BlockTableMixin:
 
     def getAllTables(self, _sheet, mincol=3):
         """
-         Identifies and extracts table-like structures from a sheet.
+        Identifies and extracts table-like structures from a sheet.
 
-         This method searches for contiguous blocks of rows that have at least `mincol`
-         non-NaN values. These blocks are interpreted as tables. It iterates through
-         the rows of the sheet.  When it encounters a row with at least `mincol`
-         valid values, it marks the beginning of a potential table. When it finds a row
-         with fewer than `mincol` valid values, it considers the preceding block of
-         rows as a complete table and extracts it using the `_getTable` method.
+        This method searches for contiguous blocks of rows that have at least `mincol`
+        non-NaN values. These blocks are interpreted as tables. It iterates through
+        the rows of the sheet.  When it encounters a row with at least `mincol`
+        valid values, it marks the beginning of a potential table. When it finds a row
+        with fewer than `mincol` valid values, it considers the preceding block of
+        rows as a complete table and extracts it using the `_getTable` method.
 
-         Args:
-             _sheet (pandas.DataFrame): The sheet to search for tables within.
-             mincol (int, optional): The minimum number of non-NaN values required
-                 for a row to be considered part of a table. Defaults to 3.
+        Args:
+            _sheet (pandas.DataFrame): The sheet to search for tables within.
+            mincol (int, optional): The minimum number of non-NaN values required
+                for a row to be considered part of a table. Defaults to 3.
 
-         Returns:
-             list: A list of pandas DataFrames, where each DataFrame represents
-                 a table-like structure found in the sheet.  Returns an empty
-                 list if no tables are found.
-         """
+        Returns:
+            list: A list of pandas DataFrames, where each DataFrame represents
+                a table-like structure found in the sheet.  Returns an empty
+                list if no tables are found.
+        """
 
         allTables = []
         init_table = -1
@@ -52,7 +47,7 @@ class BlockTableMixin:
         return allTables
 
     def getDataFrameBlocksByKeyName(self, df, key_name):
-        """ used for sheet that contains different blocks of information,
+        """used for sheet that contains different blocks of information,
         it splits the all data sheet into splited dataframes to be parser later on
         The Split is using the recognition of the first value on a cell that is repeated at the beginning
         of each block"""
@@ -69,9 +64,7 @@ class BlockTableMixin:
             else:
                 end = list_index_of_rows[index + 1]
 
-            block = df.iloc[ini:end] \
-                .dropna(axis=1, how='all') \
-                .dropna(axis=0, how='all')
+            block = df.iloc[ini:end].dropna(axis=1, how="all").dropna(axis=0, how="all")
 
             block = block.reset_index(drop=True)
             allDfBlocks.append(block)
@@ -108,9 +101,7 @@ class BlockTableMixin:
             else:
                 end = list_index_of_columns[index + 1]
 
-            block = df.iloc[:, ini:end] \
-                .dropna(axis=0, how='all') \
-                .dropna(axis=1, how='all')
+            block = df.iloc[:, ini:end].dropna(axis=0, how="all").dropna(axis=1, how="all")
 
             block = block.reset_index(drop=True)
             allDfBlocks.append(block)
@@ -156,11 +147,15 @@ class BlockTableMixin:
             pandas.DataFrame: A new DataFrame representing the extracted table.
             A copy of the DataFrame is created, so the original DataFrame is not modified in place.
         """
-        table = _sheet.iloc[init_table:end_table].dropna(axis=1, how='all').dropna(axis=0, how='all')  # Extract and clean
+        table = (
+            _sheet.iloc[init_table:end_table].dropna(axis=1, how="all").dropna(axis=0, how="all")
+        )  # Extract and clean
 
         # Set the header from the first row after cleaning and formatting:
-        table.columns = [str(s).strip().upper().replace(' ', '_') for s in table.iloc[0]]
-        table = table.drop(0).reset_index(drop=True)  # Remove the first row (old header) and reset index
+        table.columns = [str(s).strip().upper().replace(" ", "_") for s in table.iloc[0]]
+        table = table.drop(0).reset_index(
+            drop=True
+        )  # Remove the first row (old header) and reset index
         return table
 
     def _headerColumnsAreEmpty(self, columns):
@@ -173,4 +168,4 @@ class BlockTableMixin:
         Returns:
             bool: True if all column names start with "Unnamed:", False otherwise.
         """
-        return columns.str.contains('^Unnamed:').all()
+        return columns.str.contains("^Unnamed:").all()

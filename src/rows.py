@@ -1,6 +1,5 @@
-import pandas as pd
 import numpy as np
-import re
+import pandas as pd
 
 
 class RowMixin:
@@ -27,7 +26,7 @@ class RowMixin:
         """
         df = df.drop_duplicates(ignore_index=True)  # Remove duplicates and ignore original index
         df = df.reset_index()  # Reset the index
-        df = df.drop(columns=['index'], errors='ignore')  # Drop the old index column (if it exists)
+        df = df.drop(columns=["index"], errors="ignore")  # Drop the old index column (if it exists)
         return df
 
     def removeRowsByRegEx(self, df, columnName, regex):
@@ -89,10 +88,10 @@ class RowMixin:
             original DataFrame is not modified in place.
         """
         if columnName in df:  # Check if the column exists
-            df = df[df[columnName].str.lower() != 'na']  # Remove rows with 'na' (case-insensitive)
+            df = df[df[columnName].str.lower() != "na"]  # Remove rows with 'na' (case-insensitive)
             df = df[df[columnName].notnull()]  # Remove rows with null values
             df = df.reset_index()  # Reset the index
-            df = df.drop(columns=['index'], errors='ignore')  # Drop the old index column
+            df = df.drop(columns=["index"], errors="ignore")  # Drop the old index column
         return df
 
     def removeRowsWhereValueIsEqualInColumn(self, df, columnName, rowValue):
@@ -115,10 +114,10 @@ class RowMixin:
         if columnName in df:  # Check if the column exists
             df = df[df[columnName] != rowValue]  # Remove rows where value equals rowValue
             df = df.reset_index()  # Reset the index
-            df = df.drop(columns=['index'], errors='ignore')  # Drop the old index column
+            df = df.drop(columns=["index"], errors="ignore")  # Drop the old index column
         return df
 
-    def mergeRows(self, df, init_row, end_row, separator=''):
+    def mergeRows(self, df, init_row, end_row, separator=""):
         """
         Merges the content of multiple rows into a single row.
 
@@ -141,15 +140,19 @@ class RowMixin:
         dfTail = df[end_row:]  # DataFrame after the rows to merge
         dfToMerge = df[init_row:end_row]  # DataFrame containing rows to be merged
 
-        dfToMerge = pd.DataFrame(np.where(pd.isna(dfToMerge), separator, dfToMerge), dfToMerge.index, dfToMerge.columns)  # Replace NaN with separator
-        dfToMerge['TMP'] = 0  # Temporary column for grouping
-        dfToMerge = dfToMerge.set_index('TMP')  # Set temporary column as index
-        dfToMerge = dfToMerge.groupby(dfToMerge['TMP'], as_index=False).agg(' '.join)  # Merge rows using groupby and join
-        dfToMerge = dfToMerge.drop('TMP', axis=1)  # Drop the temporary column
+        dfToMerge = pd.DataFrame(
+            np.where(pd.isna(dfToMerge), separator, dfToMerge), dfToMerge.index, dfToMerge.columns
+        )  # Replace NaN with separator
+        dfToMerge["TMP"] = 0  # Temporary column for grouping
+        dfToMerge = dfToMerge.set_index("TMP")  # Set temporary column as index
+        dfToMerge = dfToMerge.groupby(dfToMerge["TMP"], as_index=False).agg(
+            " ".join
+        )  # Merge rows using groupby and join
+        dfToMerge = dfToMerge.drop("TMP", axis=1)  # Drop the temporary column
 
         df = pd.concat([dfHead, dfToMerge, dfTail], ignore_index=True)  # Concatenate the DataFrames
         df = df.reset_index(drop=True)  # Reset the index
-        #df = df.drop(columns=['index'], errors='ignore')  # Drop the old index column. This is now redundant due to ignore_index=True in concat.
+        # df = df.drop(columns=['index'], errors='ignore')  # Drop the old index column. This is now redundant due to ignore_index=True in concat.
 
         return df
 
@@ -214,7 +217,9 @@ class RowMixin:
         """
         return self.removeRowIfUniqueValue(df, len(df.index) - offset, len(df.index))
 
-    def removeAllRowsFromAColumnNameWhenHasValue(self, df, init_row, columnName, rowValue, include_remove_row=True):
+    def removeAllRowsFromAColumnNameWhenHasValue(
+        self, df, init_row, columnName, rowValue, include_remove_row=True
+    ):
         """
         Removes rows from a DataFrame starting from a specified row when a value is found in a named column.
 
@@ -236,9 +241,13 @@ class RowMixin:
             DataFrame is created, so the original DataFrame is not modified in place.
         """
         column_index = df.columns.get_loc(columnName)  # Get column index
-        return self.removeAllRowsFromAColumnWhenHasValue(df, init_row, column_index, rowValue, include_remove_row)
+        return self.removeAllRowsFromAColumnWhenHasValue(
+            df, init_row, column_index, rowValue, include_remove_row
+        )
 
-    def removeAllRowsFromAColumnWhenHasValue(self, df, init_row, index_column, value, include_remove_row=True):
+    def removeAllRowsFromAColumnWhenHasValue(
+        self, df, init_row, index_column, value, include_remove_row=True
+    ):
         """
         Removes rows from a DataFrame starting from a specified row when a value is found in a column (by index).
 
@@ -265,8 +274,9 @@ class RowMixin:
         index_top = -1
         for index in range(init_row, index_bottom):
             cell_value = df.loc[index][index_column]
-            if (cell_value == value) or \
-                    (pd.isnull(value) and pd.isnull(cell_value)):  # Handle NaN comparison
+            if (cell_value == value) or (
+                pd.isnull(value) and pd.isnull(cell_value)
+            ):  # Handle NaN comparison
                 if include_remove_row:
                     index_top = index
                 else:
@@ -299,9 +309,11 @@ class RowMixin:
         index_top = -1
         for index in range(init_row, index_bottom + 1):
             cell_value = df.loc[index][index_column]
-            if (isinstance(value, list) and any(cell_value == v for v in value)) or \
-                    cell_value == value or \
-                    (isinstance(value, str) and pd.isnull(value) and pd.isnull(cell_value)):  # Handle list, single, and NaN comparison
+            if (
+                (isinstance(value, list) and any(cell_value == v for v in value))
+                or cell_value == value
+                or (isinstance(value, str) and pd.isnull(value) and pd.isnull(cell_value))
+            ):  # Handle list, single, and NaN comparison
                 index_top = index
                 break
         if index_top != -1:
@@ -345,33 +357,33 @@ class RowMixin:
             pandas.DataFrame: A new DataFrame with the empty rows removed and the index reset.
             A copy of the DataFrame is created, so the original DataFrame is not modified in place.
         """
-        df = df.dropna(axis=0, how='all')
+        df = df.dropna(axis=0, how="all")
         df = df.reset_index()
-        df = df.drop(columns=['index'], errors='ignore')
+        df = df.drop(columns=["index"], errors="ignore")
         return df
 
     def fillForwardRowValues(self, df, columnNames=[]):
         """
-       Fills forward missing values in specified columns of a DataFrame.
+        Fills forward missing values in specified columns of a DataFrame.
 
-       In Excel files, merged cells can result in subsequent rows having empty
-       values. This method fills these empty values with the value from the
-       previous row within the specified columns.  This effectively propagates
-       the value downwards until a new value is encountered.
+        In Excel files, merged cells can result in subsequent rows having empty
+        values. This method fills these empty values with the value from the
+        previous row within the specified columns.  This effectively propagates
+        the value downwards until a new value is encountered.
 
-       For example, if a column has the following values:
-       `[val1, NaN, NaN, NaN, val2, NaN, NaN, ...]`
-       this method will transform it to:
-       `[val1, val1, val1, val1, val2, val2, val2, ...]`
+        For example, if a column has the following values:
+        `[val1, NaN, NaN, NaN, val2, NaN, NaN, ...]`
+        this method will transform it to:
+        `[val1, val1, val1, val1, val2, val2, val2, ...]`
 
-       Args:
-           df (pandas.DataFrame): The DataFrame to modify.
-           columnNames (list, optional): A list of column names where forward fill
-               should be applied. If None, defaults to an empty list, and no columns are filled.
+        Args:
+            df (pandas.DataFrame): The DataFrame to modify.
+            columnNames (list, optional): A list of column names where forward fill
+                should be applied. If None, defaults to an empty list, and no columns are filled.
 
-       Returns:
-           pandas.DataFrame: The modified DataFrame (the modification is done in place).
-       """
+        Returns:
+            pandas.DataFrame: The modified DataFrame (the modification is done in place).
+        """
         for cName in columnNames:
             if cName in df:
                 df[cName] = df[cName].ffill()
@@ -416,18 +428,24 @@ class RowMixin:
             pandas.DataFrame: A new DataFrame with the specified row as the header.
             A copy of the DataFrame is created, so the original DataFrame is not modified in place.
         """
-        new_header = pd.DataFrame(df.values[index_row]).T  # Transpose to get a single row DataFrame for headers
+        new_header = pd.DataFrame(
+            df.values[index_row]
+        ).T  # Transpose to get a single row DataFrame for headers
         new_header = self.removeAllCRLF(new_header)  # Remove CR/LF characters
         new_header = self.stripAll(new_header)  # Remove leading/trailing whitespace
         if uppercase:
-            new_header = new_header.apply(lambda x: x.astype(str).str.upper())  # Convert to uppercase
+            new_header = new_header.apply(
+                lambda x: x.astype(str).str.upper()
+            )  # Convert to uppercase
         if char_space_to != " ":
-            new_header = new_header.replace(' ', char_space_to, regex=True)  # Replace spaces
+            new_header = new_header.replace(" ", char_space_to, regex=True)  # Replace spaces
         df.columns = new_header.iloc[0]  # Set the new header
         df = df.drop(index_row).reset_index(drop=True)  # Remove the old header row and reset index
         return df
 
-    def setRowAsHeaderByValue(self, df, column_to_search, value_to_match, uppercase=False, char_space_to=" "):
+    def setRowAsHeaderByValue(
+        self, df, column_to_search, value_to_match, uppercase=False, char_space_to=" "
+    ):
         """
         Sets a row as the header based on a value match in a specified column.
 
@@ -450,7 +468,9 @@ class RowMixin:
         if column_to_search not in df.columns:
             return df  # Return original DataFrame if column doesn't exist
 
-        index_row = df.index[df[column_to_search] == value_to_match].tolist()  # Get the index as a list
+        index_row = df.index[
+            df[column_to_search] == value_to_match
+        ].tolist()  # Get the index as a list
         if index_row:  # Check if a match was found
             df = self.setRowAsHeader(df, index_row[0], uppercase, char_space_to)
         return df
@@ -470,7 +490,9 @@ class RowMixin:
             pandas.DataFrame: A new DataFrame with the original header as the first row.
              A copy of the DataFrame is created, so the original DataFrame is not modified in place.
         """
-        df = pd.concat([df.columns.to_frame().T, df], ignore_index=True)  # Concatenate header as a row
+        df = pd.concat(
+            [df.columns.to_frame().T, df], ignore_index=True
+        )  # Concatenate header as a row
         df.columns = range(len(df.columns))  # Reset columns to default integer indices
         return df
 
@@ -490,5 +512,7 @@ class RowMixin:
             DataFrame is created, so the original DataFrame is not modified in place.
         """
         df = df.transpose().reset_index(drop=True)  # Transpose and reset index
-        df = self.setRowAsHeader(df, index_row=0, uppercase=True, char_space_to="_")  # Set first row as header
+        df = self.setRowAsHeader(
+            df, index_row=0, uppercase=True, char_space_to="_"
+        )  # Set first row as header
         return df

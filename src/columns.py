@@ -1,6 +1,4 @@
 import pandas as pd
-import numpy as np
-import re
 
 
 class ColumnMixin:
@@ -12,21 +10,21 @@ class ColumnMixin:
 
     def removeEmptyColumns(self, df):
         """
-       Removes empty or entirely whitespace-filled columns from a DataFrame.
+        Removes empty or entirely whitespace-filled columns from a DataFrame.
 
-       This method removes columns that contain either all NaN (Not a Number) values
-       or all empty strings. It first removes columns with all NaN values using
-       `dropna` and then removes columns where all values are empty strings ('').
+        This method removes columns that contain either all NaN (Not a Number) values
+        or all empty strings. It first removes columns with all NaN values using
+        `dropna` and then removes columns where all values are empty strings ('').
 
-       Args:
-           df (pandas.DataFrame): The DataFrame to modify.
+        Args:
+            df (pandas.DataFrame): The DataFrame to modify.
 
-       Returns:
-           pandas.DataFrame: A new DataFrame with the empty or whitespace-only columns removed.
-           A copy of the DataFrame is created, so the original DataFrame is not modified in place.
-       """
-        df = df.dropna(axis=1, how='all')
-        df = df.loc[:, (df != '').any(axis=0)]
+        Returns:
+            pandas.DataFrame: A new DataFrame with the empty or whitespace-only columns removed.
+            A copy of the DataFrame is created, so the original DataFrame is not modified in place.
+        """
+        df = df.dropna(axis=1, how="all")
+        df = df.loc[:, (df != "").any(axis=0)]
 
         return df
 
@@ -77,7 +75,7 @@ class ColumnMixin:
             pandas.DataFrame: A new DataFrame with the empty columns removed. A copy of the
             DataFrame is created, so the original DataFrame is not modified in place.
         """
-        df = df.dropna(how='all', axis=1)  # Remove columns where all values are NaN
+        df = df.dropna(how="all", axis=1)  # Remove columns where all values are NaN
         return df
 
     def removeAllColumnsBeforeColumnValueHeader(self, df, header_value, skip_first=False):
@@ -112,7 +110,9 @@ class ColumnMixin:
                     skip_first = False
             index += 1  # More Pythonic increment
         if index_column != -1:
-            df = df.iloc[:, range(index_column)]  # Keep columns up to (but not including) the target column
+            df = df.iloc[
+                :, range(index_column)
+            ]  # Keep columns up to (but not including) the target column
             df = df.reset_index(drop=True)
         return df
 
@@ -149,7 +149,9 @@ class ColumnMixin:
             index += 1  # More Pythonic increment
 
         if index_column != -1:
-            df = df.iloc[:, range(0, index_column + 1)]  # Keep columns from the beginning up to and including the target column.
+            df = df.iloc[
+                :, range(0, index_column + 1)
+            ]  # Keep columns from the beginning up to and including the target column.
             df = df.reset_index(drop=True)
         return df
 
@@ -229,7 +231,7 @@ class ColumnMixin:
             DataFrame is created, so the original DataFrame is not modified in place.
         """
         df = df.loc[:, df.columns.notnull()]  # Remove columns with NaN names
-        df = df.drop(columns=["NAN"], errors='ignore')  # Remove column named "NAN" (if it exists)
+        df = df.drop(columns=["NAN"], errors="ignore")  # Remove column named "NAN" (if it exists)
         return df
 
     def removeColumnByName(self, df, key_name, if_column_exists=None):
@@ -252,7 +254,9 @@ class ColumnMixin:
         """
         if if_column_exists is None or if_column_exists in df.columns:
             columns_to_drop = list(df.filter(regex=key_name))  # Get the list of columns to drop
-            df = df.drop(columns=columns_to_drop, errors='ignore')  # Drop the columns, ignoring errors if they don't exist.
+            df = df.drop(
+                columns=columns_to_drop, errors="ignore"
+            )  # Drop the columns, ignoring errors if they don't exist.
         return df
 
     def removeColumnsByNames(self, df, column_names):
@@ -269,8 +273,12 @@ class ColumnMixin:
             pandas.DataFrame: A new DataFrame with the specified columns removed. A copy of the
             DataFrame is created, so the original DataFrame is not modified in place.
         """
-        columns_to_drop = '|'.join(column_names)  # Create a regex pattern from the list of column names
-        df = df.drop(columns=list(df.filter(regex=columns_to_drop)), errors='ignore')  # Drop the columns.
+        columns_to_drop = "|".join(
+            column_names
+        )  # Create a regex pattern from the list of column names
+        df = df.drop(
+            columns=list(df.filter(regex=columns_to_drop)), errors="ignore"
+        )  # Drop the columns.
         return df
 
     def removeAllColumnsExceptListOfColumnNames(self, df, column_names):
@@ -287,7 +295,9 @@ class ColumnMixin:
             pandas.DataFrame: A new DataFrame with only the specified columns. A copy of the
             DataFrame is created, so the original DataFrame is not modified in place.
         """
-        df = df.drop(df.columns.difference(column_names), axis=1, errors='ignore')  # Drop columns not in the list.
+        df = df.drop(
+            df.columns.difference(column_names), axis=1, errors="ignore"
+        )  # Drop columns not in the list.
         return df
 
     def mergeColumns(self, df, init_col, end_col, separator, name_of_column):
@@ -309,13 +319,18 @@ class ColumnMixin:
             pandas.DataFrame: A new DataFrame with the columns merged. A copy of the
             DataFrame is created, so the original DataFrame is not modified in place.
         """
-        df[name_of_column] = df[df.columns[init_col:end_col + 1]] \
-            .apply(lambda x: separator.join(x.dropna().astype(str)), axis=1)  # Merge columns
-        columns_to_drop = df.columns[range(init_col, end_col + 1)].tolist()  # Get the list of columns to drop.
-        df = df.drop(columns=columns_to_drop, errors='ignore')  # Remove the original columns
+        df[name_of_column] = df[df.columns[init_col : end_col + 1]].apply(
+            lambda x: separator.join(x.dropna().astype(str)), axis=1
+        )  # Merge columns
+        columns_to_drop = df.columns[
+            range(init_col, end_col + 1)
+        ].tolist()  # Get the list of columns to drop.
+        df = df.drop(columns=columns_to_drop, errors="ignore")  # Remove the original columns
         return df
 
-    def mergeColumnsByName(self, df, column_destine, column_left, column_right, remove_origin=True, separator='_'):
+    def mergeColumnsByName(
+        self, df, column_destine, column_left, column_right, remove_origin=True, separator="_"
+    ):
         """
         Merges content from two columns into a destination column.
 
@@ -335,9 +350,13 @@ class ColumnMixin:
             pandas.DataFrame: A new DataFrame with the columns merged. A copy of the
             DataFrame is created, so the original DataFrame is not modified in place.
         """
-        df[column_destine] = df[column_left].astype(str) + separator + df[column_right].astype(str)  # Merge columns, ensure strings
+        df[column_destine] = (
+            df[column_left].astype(str) + separator + df[column_right].astype(str)
+        )  # Merge columns, ensure strings
         if remove_origin:
-            df = df.drop(columns=[column_right, column_left], errors='ignore')  # Remove original columns
+            df = df.drop(
+                columns=[column_right, column_left], errors="ignore"
+            )  # Remove original columns
         return df
 
     def splitOnColumns(self, df, column_to_split, split_character="_", list_of_columns=None):
@@ -361,13 +380,19 @@ class ColumnMixin:
         """
 
         if list_of_columns is None:
-            list_of_columns = range(len(df[column_to_split].iloc[0].split(split_character)))  # Generate a list of numbers based on the split size.
+            list_of_columns = range(
+                len(df[column_to_split].iloc[0].split(split_character))
+            )  # Generate a list of numbers based on the split size.
 
-        if df[column_to_split].str.contains(split_character).all():  # Only split if all rows contain the split character.
+        if (
+            df[column_to_split].str.contains(split_character).all()
+        ):  # Only split if all rows contain the split character.
             df[list_of_columns] = df[column_to_split].str.split(split_character, expand=True)
         return df
 
-    def splitIn2ColumnsRight(self, df, column_to_split, columns_to_generate=None, split_character="_"):
+    def splitIn2ColumnsRight(
+        self, df, column_to_split, columns_to_generate=None, split_character="_"
+    ):
         """
         Splits a column into two columns using the *rightmost* occurrence of a delimiter.
 
@@ -388,11 +413,17 @@ class ColumnMixin:
         if columns_to_generate is None:
             columns_to_generate = ["LEFT_VALUE", "RIGHT_VALUE"]
 
-        if df[column_to_split].str.contains(split_character).any():  # Only split if at least one row contains the split character
-            df[columns_to_generate] = df[column_to_split].str.rsplit(split_character, n=1, expand=True)
+        if (
+            df[column_to_split].str.contains(split_character).any()
+        ):  # Only split if at least one row contains the split character
+            df[columns_to_generate] = df[column_to_split].str.rsplit(
+                split_character, n=1, expand=True
+            )
         return df
 
-    def splitIn2ColumnsLeft(self, df, column_to_split, columns_to_generate=None, split_character="_"):
+    def splitIn2ColumnsLeft(
+        self, df, column_to_split, columns_to_generate=None, split_character="_"
+    ):
         """
         Splits a column into two columns using the *leftmost* occurrence of a delimiter.
 
@@ -413,6 +444,10 @@ class ColumnMixin:
         if columns_to_generate is None:
             columns_to_generate = ["LEFT_VALUE", "RIGHT_VALUE"]
 
-        if df[column_to_split].str.contains(split_character).any():  # Only split if at least one row contains the split character
-            df[columns_to_generate] = df[column_to_split].str.split(split_character, n=1, expand=True)
+        if (
+            df[column_to_split].str.contains(split_character).any()
+        ):  # Only split if at least one row contains the split character
+            df[columns_to_generate] = df[column_to_split].str.split(
+                split_character, n=1, expand=True
+            )
         return df

@@ -1,0 +1,88 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "advanced-excel"
+version = "1.1.0"
+description = "Advanced Excel data processing and manipulation library for Python"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Antonio Castellon", email = "antonio@castellon.ch"}
+]
+maintainers = [
+    {name = "Antonio Castellon", email = "antonio@castellon.ch"}
+]
+keywords = ["excel", "pandas", "data-processing", "xlsx", "data-cleaning", "openpyxl"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Office/Business :: Financial :: Spreadsheet",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.1.0",
+    "openpyxl>=3.1.2",
+    "numpy>=1.25.2",
+    "pyxlsb>=1.0.10",
+    "xlrd>=2.0.1",
+]
+
+[project.optional-dependencies]
+sspipe = ["sspipe>=0.1.17"]
+legacy = []  # xlrd is already in core for .xls support
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "ruff",
+    "black",
+    "mypy",
+    "pandas-stubs",
+]
+
+[project.urls]
+Homepage = "https://github.com/antonio-castellon/AdvancedExcel"
+Repository = "https://github.com/antonio-castellon/AdvancedExcel"
+Issues = "https://github.com/antonio-castellon/AdvancedExcel/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q --tb=short"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = ["E", "F", "I", "UP", "B", "SIM", "C4"]
+ignore = ["E501", "B008"]  # allow long lines in some cases, no mutable defaults check over-aggressive
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false  # start permissive, tighten later
+ignore_missing_imports = true

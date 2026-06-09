@@ -1,12 +1,12 @@
-import pandas as pd
-import numpy as np
-import re
 import ntpath
+import re
 
-from pandas.io.excel._openpyxl import OpenpyxlReader
-from openpyxl import load_workbook
-from pyxlsb import open_workbook
+import numpy as np
+import pandas as pd
 import xlrd
+from openpyxl import load_workbook
+from pandas.io.excel._openpyxl import OpenpyxlReader
+from pyxlsb import open_workbook
 
 
 class IOMixin:
@@ -20,58 +20,68 @@ class IOMixin:
 
     def __init__(self, file, filetype=None):
         """
-          Initializes an ExcelFile object by loading the specified file and creating
-          an internal distribution of all sheets as pandas DataFrames.
+        Initializes an ExcelFile object by loading the specified file and creating
+        an internal distribution of all sheets as pandas DataFrames.
 
-          This constructor determines the appropriate engine (openpyxl, xlrd, or pyxlsb)
-          based on the file extension (.xlsx, .xlsm, .xls, or other assumed to be .xlsb).
-          It then iterates through each sheet in the file, reading the data into a
-          pandas DataFrame and storing it in the `self.sheets` dictionary, where
-          the keys are the sheet names and the values are the corresponding DataFrames.
+        This constructor determines the appropriate engine (openpyxl, xlrd, or pyxlsb)
+        based on the file extension (.xlsx, .xlsm, .xls, or other assumed to be .xlsb).
+        It then iterates through each sheet in the file, reading the data into a
+        pandas DataFrame and storing it in the `self.sheets` dictionary, where
+        the keys are the sheet names and the values are the corresponding DataFrames.
 
-          Args:
-              file (str): The path to the Excel file.
-              filetype (dtype, optional): Data type for columns. Defaults to None.  If given, it is passed to pandas `read_excel` function.
+        Args:
+            file (str): The path to the Excel file.
+            filetype (dtype, optional): Data type for columns. Defaults to None.  If given, it is passed to pandas `read_excel` function.
 
-          Raises:
-              FileNotFoundError: If the specified file does not exist.  (Implicitly raised by underlying libraries)
-              Exception: If there is an error during file processing or sheet reading. (Implicitly raised by underlying libraries)
+        Raises:
+            FileNotFoundError: If the specified file does not exist.  (Implicitly raised by underlying libraries)
+            Exception: If there is an error during file processing or sheet reading. (Implicitly raised by underlying libraries)
 
-          """
+        """
         self.name = self._path_leaf(file)
         _engine = None
         self.sheets = {}
 
-        if re.search(r'(?i)\.xlsx|\.xlsm', self.name):
+        if re.search(r"(?i)\.xlsx|\.xlsm", self.name):
             AllSheets = load_workbook(filename=file).sheetnames
-            _engine = 'openpyxl'
-        elif re.search(r'(?i)\.xls$', self.name):
+            _engine = "openpyxl"
+        elif re.search(r"(?i)\.xls$", self.name):
             AllSheets = xlrd.open_workbook(filename=file).sheet_names()
-            _engine = 'xlrd'
+            _engine = "xlrd"
         else:
             AllSheets = self._get_sheetnames(file)
-            _engine = 'pyxlsb'
+            _engine = "pyxlsb"
 
         for x in AllSheets:
             # print(x)
-            dfraw = pd.read_excel(file,
-                                  engine=_engine,
-                                  sheet_name=x,
-                                  dtype=filetype,
-                                  skiprows=0,
-                                  engine_kwargs={"keep_vba": False})
+            dfraw = pd.read_excel(
+                file,
+                engine=_engine,
+                sheet_name=x,
+                dtype=filetype,
+                skiprows=0,
+                engine_kwargs={"keep_vba": False},
+            )
             self.sheets[x] = dfraw
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Currently a no-op. Future versions may release workbook resources here.
+        self.sheets.clear()
+        return False
 
     def getSheet(self, sheetname):
         """
-       Retrieves a specific sheet from the loaded Excel file as a pandas DataFrame.
+        Retrieves a specific sheet from the loaded Excel file as a pandas DataFrame.
 
-       Args:
-           sheetname (str): The name of the sheet to retrieve.
+        Args:
+            sheetname (str): The name of the sheet to retrieve.
 
-       Returns:
-           pandas.DataFrame: The DataFrame representing the requested sheet, or None if the sheet does not exist.
-       """
+        Returns:
+            pandas.DataFrame: The DataFrame representing the requested sheet, or None if the sheet does not exist.
+        """
         if sheetname in self.sheets.keys():
             return self.sheets[sheetname]
         else:
@@ -121,6 +131,7 @@ class IOMixin:
 
 # --- openpyxl hyperlink monkey-patch (applied on import of this module) ---
 
+
 def _convert_cell(self, cell):
     """
     Converts a cell value from openpyxl to a standard Python type.
@@ -136,9 +147,8 @@ def _convert_cell(self, cell):
         Python type, or np.nan for errors).
     """
     from openpyxl.cell.cell import TYPE_BOOL, TYPE_ERROR, TYPE_NUMERIC
-    from pandas._typing import Scalar
 
-    if hasattr(cell, 'hyperlink') and hasattr(cell.hyperlink, 'target'):
+    if hasattr(cell, "hyperlink") and hasattr(cell.hyperlink, "target"):
         return cell.hyperlink.target  # Return hyperlink target
     elif cell.data_type == TYPE_ERROR:
         return np.nan

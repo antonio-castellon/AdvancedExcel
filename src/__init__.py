@@ -14,5 +14,11 @@ for any code that relied on it.
 
 from .AdvancedExcel import AdvancedExcel
 
-# Constants are available as AdvancedExcel.ROW_INDEX etc. (class attributes)
-# and also as module-level names via the aliases in AdvancedExcel.py.
+# Re-export for convenience and to satisfy linters
+__all__ = ["AdvancedExcel"]
+
+# Constants and version are available as AdvancedExcel.XXX
+# (class attributes) and also as module-level names.
+from .AdvancedExcel import ROW_INDEX, COL_INDEX, DATA, __version__  # noqa: F401
+
+

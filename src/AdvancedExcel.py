@@ -9,18 +9,14 @@ table/block/entity extraction, lookup, I/O, cleaning, and reshape.
 All cross-calls (self.other_method) resolve via the final MRO.
 """
 
-import pandas as pd  # kept for any direct use / compat
-import numpy as np
-import re
-
 # Import all the behavior mixins
+from .blocks import BlockTableMixin
+from .cleaning import CleaningMixin
+from .columns import ColumnMixin
 from .io import IOMixin
 from .lookup import LookupMixin
-from .blocks import BlockTableMixin
-from .rows import RowMixin
-from .columns import ColumnMixin
-from .cleaning import CleaningMixin
 from .reshape import ReshapeMixin
+from .rows import RowMixin
 
 
 class AdvancedExcel(
@@ -31,7 +27,6 @@ class AdvancedExcel(
     ColumnMixin,
     CleaningMixin,
     ReshapeMixin,
-    object,
 ):
     """
     A Python wrapper for Excel files, providing easy access to their contents.
@@ -61,9 +56,7 @@ class AdvancedExcel(
     COL_INDEX = "col_index"
     DATA = "data"
 
-    name = None
-    sheets = {}
-    """ it contains all sheets as dataframes """
+    __version__ = "1.1.0"
 
 
 # Module-level aliases for the constants (so that both
@@ -74,6 +67,8 @@ class AdvancedExcel(
 ROW_INDEX = AdvancedExcel.ROW_INDEX
 COL_INDEX = AdvancedExcel.COL_INDEX
 DATA = AdvancedExcel.DATA
+
+__version__ = AdvancedExcel.__version__
 
 
 # The heavy lifting (including the openpyxl hyperlink monkey-patch) now lives in

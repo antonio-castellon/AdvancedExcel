@@ -1,6 +1,4 @@
 import pandas as pd
-import numpy as np
-import re
 
 
 class ReshapeMixin:
@@ -36,15 +34,23 @@ class ReshapeMixin:
             pandas.DataFrame: A new DataFrame in long format. A copy of the DataFrame
             is created, so the original DataFrame is not modified in place.
         """
-        df.loc[:, column_to_melt] = df.loc[:, column_to_melt].astype(str)  # Ensure string type for the column to melt
-        df = df.melt(id_vars=[column_to_melt], var_name='column_name', value_name=column_name_values)  # Melt the DataFrame
+        df.loc[:, column_to_melt] = df.loc[:, column_to_melt].astype(
+            str
+        )  # Ensure string type for the column to melt
+        df = df.melt(
+            id_vars=[column_to_melt], var_name="column_name", value_name=column_name_values
+        )  # Melt the DataFrame
 
         if column_name_id:  # Create the ID column if specified
-            df[column_name_id] = df[column_to_melt] + '_' + df['column_name']  # Combine parameter and column names
+            df[column_name_id] = (
+                df[column_to_melt] + "_" + df["column_name"]
+            )  # Combine parameter and column names
             df.drop(columns=[column_to_melt], inplace=True)  # Drop the original parameter column
         else:  # Modify the original parameter column
-            df[column_to_melt] = df[column_to_melt] + '_' + df['column_name']  # Combine parameter and column names
-        df.drop(columns=['column_name'], inplace=True)  # Drop the temporary column name column
+            df[column_to_melt] = (
+                df[column_to_melt] + "_" + df["column_name"]
+            )  # Combine parameter and column names
+        df.drop(columns=["column_name"], inplace=True)  # Drop the temporary column name column
 
         return df
 
@@ -82,13 +88,24 @@ class ReshapeMixin:
             pandas.DataFrame: A new DataFrame in the reshaped wide format. A copy of the
             DataFrame is created, so the original DataFrame is not modified in place.
         """
-        columns_with_values = df.columns[df.columns != column_to_generate_columns].tolist()  # Columns to melt
-        long_df = pd.melt(df, id_vars=[column_to_generate_columns], value_vars=columns_with_values,  # Melt
-                          var_name="PARAMETERS", value_name="value")  # Rename value column to "value" for pivot_table compatibility
-        wide_df = pd.pivot_table(long_df, index=["PARAMETERS"], columns=[column_to_generate_columns], values="value")  # Pivot
+        columns_with_values = df.columns[
+            df.columns != column_to_generate_columns
+        ].tolist()  # Columns to melt
+        long_df = pd.melt(
+            df,
+            id_vars=[column_to_generate_columns],
+            value_vars=columns_with_values,  # Melt
+            var_name="PARAMETERS",
+            value_name="value",
+        )  # Rename value column to "value" for pivot_table compatibility
+        wide_df = pd.pivot_table(
+            long_df, index=["PARAMETERS"], columns=[column_to_generate_columns], values="value"
+        )  # Pivot
         wide_df[column_name_id] = wide_df.index  # Add ID column
         wide_df.reset_index(drop=True, inplace=True)  # Reset index
-        wide_df = wide_df[[column_name_id] + [col for col in wide_df.columns if col not in [column_name_id]]]  # Reorder columns
+        wide_df = wide_df[
+            [column_name_id] + [col for col in wide_df.columns if col not in [column_name_id]]
+        ]  # Reorder columns
         return wide_df
 
     def mergeListDataFrames(self, df_list, column_id_name="GROUP_ID"):
@@ -110,7 +127,7 @@ class ReshapeMixin:
         """
         merged_df = pd.concat(df_list, keys=range(len(df_list)))  # Concatenate with group keys
         merged_df = merged_df.reset_index(level=0)  # Move group keys to a column
-        merged_df = merged_df.rename(columns={'level_0': 'Group'})  # Rename the group key column
+        merged_df = merged_df.rename(columns={"level_0": "Group"})  # Rename the group key column
         merged_df = merged_df.reset_index(drop=True)  # Reset the index
         merged_df[column_id_name] = range(len(merged_df))  # Assign serial IDs
         return merged_df

@@ -1,6 +1,7 @@
-import pandas as pd
-import numpy as np
 import re
+
+import numpy as np
+import pandas as pd
 
 
 class CleaningMixin:
@@ -25,7 +26,7 @@ class CleaningMixin:
         Returns:
             pandas.DataFrame: The modified DataFrame (the modification is done in place).
         """
-        df.loc[:, columnName] = df[columnName].fillna('NA')
+        df.loc[:, columnName] = df[columnName].fillna("NA")
         return df
 
     def replaceNaNStrings(self, df):
@@ -46,8 +47,11 @@ class CleaningMixin:
                 replaced by actual NaN values.  A copy of the DataFrame is created,
                 so the original DataFrame is not modified in place.
         """
-        df = pd.DataFrame(np.where(df.isin(['NA_NA', 'NA', 'NAN', "na_na", "na", "nan"]), np.nan, df), df.index,
-                          df.columns)
+        df = pd.DataFrame(
+            np.where(df.isin(["NA_NA", "NA", "NAN", "na_na", "na", "nan"]), np.nan, df),
+            df.index,
+            df.columns,
+        )
         return df
 
     def stripAll(self, df):
@@ -64,10 +68,10 @@ class CleaningMixin:
             pandas.DataFrame: A new DataFrame with leading/trailing whitespace removed from all strings.
             A copy of the DataFrame is created, so the original DataFrame is not modified in place.
         """
-        df = df.replace(to_replace=r'^\s*(.*?)\s*$', value=r'\1', regex=True)
+        df = df.replace(to_replace=r"^\s*(.*?)\s*$", value=r"\1", regex=True)
         return df
 
-    def removeAllCRLF(self, df, byValue=''):
+    def removeAllCRLF(self, df, byValue=""):
         """
         Removes carriage return (CR) and line feed (LF) characters from string values in a DataFrame.
 
@@ -83,7 +87,7 @@ class CleaningMixin:
             pandas.DataFrame: A new DataFrame with CR/LF characters removed or replaced.
             A copy of the DataFrame is created, so the original DataFrame is not modified in place.
         """
-        df = df.replace({'\n': byValue, '\r': byValue}, regex=True)  # Replace CR/LF with byValue
+        df = df.replace({"\n": byValue, "\r": byValue}, regex=True)  # Replace CR/LF with byValue
         if byValue:  # Check if byValue is not empty
             df = df.replace({byValue + byValue: byValue}, regex=True)  # Replace double byValue
         return df
@@ -107,13 +111,14 @@ class CleaningMixin:
             pandas.DataFrame: A new DataFrame with values replaced according to the dictionary.
             A copy of the DataFrame is created, so the original DataFrame is not modified in place.
         """
-        df.loc[:, column_to_apply] = (df[column_to_apply]
-                                      .str.replace(r'µ', 'u')
-                                      .map(dictionary)
-                                      .fillna(df[column_to_apply]))
+        df.loc[:, column_to_apply] = (
+            df[column_to_apply].str.replace(r"µ", "u").map(dictionary).fillna(df[column_to_apply])
+        )
         return df
 
-    def replaceAll(self, df, to_replace, replace_by, columns_to_clean=None, columns_not_to_clean=None):
+    def replaceAll(
+        self, df, to_replace, replace_by, columns_to_clean=None, columns_not_to_clean=None
+    ):
         """
         Replaces all occurrences of a specified value with another value in a DataFrame.
 
@@ -142,16 +147,20 @@ class CleaningMixin:
         """
 
         if columns_to_clean is None and columns_not_to_clean is None:  # Apply to all columns
-            df = df.replace(to_replace=r'' + to_replace, value=r'' + replace_by, regex=True)
+            df = df.replace(to_replace=r"" + to_replace, value=r"" + replace_by, regex=True)
         elif columns_to_clean:  # Apply to specified columns
             for col in columns_to_clean:
                 df[col] = df[col].astype(str)  # Ensure column is string type
-                df[col] = df[col].replace(to_replace=r'' + to_replace, value=r'' + replace_by, regex=True)
+                df[col] = df[col].replace(
+                    to_replace=r"" + to_replace, value=r"" + replace_by, regex=True
+                )
         elif columns_not_to_clean:  # Apply to all but specified columns
             for col in df.columns:
                 if col not in columns_not_to_clean:
                     df[col] = df[col].astype(str)  # Ensure column is string type
-                    df[col] = df[col].replace(to_replace=r'' + to_replace, value=r'' + replace_by, regex=True)
+                    df[col] = df[col].replace(
+                        to_replace=r"" + to_replace, value=r"" + replace_by, regex=True
+                    )
 
         return df
 
@@ -177,12 +186,17 @@ class CleaningMixin:
             pandas.DataFrame: A new DataFrame with the replacements made. A copy of the
             DataFrame is created, so the original DataFrame is not modified in place.
         """
-        for pattern, replacement in to_replace:  # Iterate through the list of (pattern, replacement) tuples
+        for (
+            pattern,
+            replacement,
+        ) in to_replace:  # Iterate through the list of (pattern, replacement) tuples
             df = self.replaceAll(df, pattern, replacement, columns_to_clean, columns_not_to_clean)
 
         return df
 
-    def replaceSpacesBySeparator(self, df, separator=';', columns_to_clean=None, columns_not_to_clean=None):
+    def replaceSpacesBySeparator(
+        self, df, separator=";", columns_to_clean=None, columns_not_to_clean=None
+    ):
         """
         Replaces multiple spaces with a specified separator in a DataFrame.
 
@@ -204,23 +218,30 @@ class CleaningMixin:
             modified in place.
         """
         if columns_to_clean is None and columns_not_to_clean is None:  # Apply to all columns
-            df = df.replace(to_replace=r'\s+', value=separator, regex=True) \
-                .replace(to_replace=r'[' + separator + ']+', value=separator, regex=True)  # Replace multiple separators
+            df = df.replace(to_replace=r"\s+", value=separator, regex=True).replace(
+                to_replace=r"[" + separator + "]+", value=separator, regex=True
+            )  # Replace multiple separators
         elif columns_to_clean:  # Apply to specified columns
             for col in columns_to_clean:
                 df[col] = df[col].astype(str)  # Ensure string type
-                df[col] = df[col].replace(to_replace=r'\s+', value=separator, regex=True) \
-                    .replace(to_replace=r'[' + separator + ']+', value=separator, regex=True)  # Replace multiple separators
+                df[col] = (
+                    df[col]
+                    .replace(to_replace=r"\s+", value=separator, regex=True)
+                    .replace(to_replace=r"[" + separator + "]+", value=separator, regex=True)
+                )  # Replace multiple separators
         elif columns_not_to_clean:  # Apply to all but specified columns
             for col in df.columns:
                 if col not in columns_not_to_clean:
                     df[col] = df[col].astype(str)  # Ensure string type
-                    df[col] = df[col].replace(to_replace=r'\s+', value=separator, regex=True) \
-                        .replace(to_replace=r'[' + separator + ']+', value=separator, regex=True)  # Replace multiple separators
+                    df[col] = (
+                        df[col]
+                        .replace(to_replace=r"\s+", value=separator, regex=True)
+                        .replace(to_replace=r"[" + separator + "]+", value=separator, regex=True)
+                    )  # Replace multiple separators
 
         return df
 
-    def transformAsNumeric(self, df, columnsToApply=None, columnsToAvoid=None, errors='coerce'):
+    def transformAsNumeric(self, df, columnsToApply=None, columnsToAvoid=None, errors="coerce"):
         """
         Transforms specified columns in a DataFrame to numeric type, handling errors.
 
@@ -254,7 +275,9 @@ class CleaningMixin:
         elif columnsToApply:
             columns_to_convert = columnsToApply  # Convert specified columns
         elif columnsToAvoid:
-            columns_to_convert = df.columns.difference(columnsToAvoid)  # Convert all but avoided columns
+            columns_to_convert = df.columns.difference(
+                columnsToAvoid
+            )  # Convert all but avoided columns
         else:
             columns_to_convert = []  # Empty list if none of the above.
 
@@ -281,7 +304,9 @@ class CleaningMixin:
         left_value = None  # Store the value from the left
         df = df.reset_index(drop=True)  # Reset index for consistent access
         for index_column in range(len(df.columns)):
-            current_value = df.loc[index_row, df.columns[index_column]]  # More efficient way to access the cell value.
+            current_value = df.loc[
+                index_row, df.columns[index_column]
+            ]  # More efficient way to access the cell value.
             if pd.isnull(current_value):
                 df.loc[index_row, df.columns[index_column]] = left_value  # Fill with left value
             else:
@@ -306,7 +331,7 @@ class CleaningMixin:
         df.rename(columns=dictionary, inplace=True)
         return df
 
-    def renameHeadersByRegExp(self, df, regexp, value=''):
+    def renameHeadersByRegExp(self, df, regexp, value=""):
         """
         Renames columns using a regular expression substitution.
 
@@ -326,7 +351,7 @@ class CleaningMixin:
         df = df.rename(columns=lambda x: re.sub(regexp, value, x))
         return df
 
-    def renameHeadersByRegExpList(self, df, listOfRegExp, value=''):
+    def renameHeadersByRegExpList(self, df, listOfRegExp, value=""):
         """
         Renames columns using a list of regular expression substitutions.
 
@@ -389,5 +414,7 @@ class CleaningMixin:
             if title:
                 df.loc[:, columnName] = df[columnName].str.title()  # Convert to title case
             else:
-                df.loc[:, columnName] = df[columnName].str.upper() if uppercase else df[columnName].str.lower()  # Convert to upper/lower case
+                df.loc[:, columnName] = (
+                    df[columnName].str.upper() if uppercase else df[columnName].str.lower()
+                )  # Convert to upper/lower case
         return df

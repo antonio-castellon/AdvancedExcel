@@ -1,6 +1,4 @@
 import pandas as pd
-import numpy as np
-import re
 
 
 class LookupMixin:
@@ -47,43 +45,43 @@ class LookupMixin:
         data_rows = self.getAllRowsFromKey(_sheet, keyname)
         allResults = []
         for row in data_rows:
-            allResults.append(
-                self._getNextValue(row["data"], row["col_index"] + 1, limitoffset))
+            allResults.append(self._getNextValue(row["data"], row["col_index"] + 1, limitoffset))
 
         return allResults
 
     def getNextValueFromKeyList(self, _sheet, keynames=[], limitoffset=0):
         """
-         Searches a sheet for the first occurrence of any keyname from a given list
-         and returns the value immediately to its right, within a specified offset limit.
+        Searches a sheet for the first occurrence of any keyname from a given list
+        and returns the value immediately to its right, within a specified offset limit.
 
-         This method iterates through the provided list of `keynames`.  For each `keyname`,
-         it searches the `_sheet` using `getAllRowsFromKey`. If a `keyname` is found
-         (i.e., `getAllRowsFromKey` returns a non-empty list), it retrieves the first
-         row containing that key and extracts the value to the right of the key using
-         `_getNextValue`, respecting the `limitoffset`.  The search stops after the
-         first keyname is found.
+        This method iterates through the provided list of `keynames`.  For each `keyname`,
+        it searches the `_sheet` using `getAllRowsFromKey`. If a `keyname` is found
+        (i.e., `getAllRowsFromKey` returns a non-empty list), it retrieves the first
+        row containing that key and extracts the value to the right of the key using
+        `_getNextValue`, respecting the `limitoffset`.  The search stops after the
+        first keyname is found.
 
-         Args:
-             _sheet (pandas.DataFrame): The sheet to search within.
-             keynames (list, optional): A list of keynames to search for. Defaults to None.
-                                        If None, an empty list is effectively used, and an empty list will be returned.
-             limitoffset (int, optional): The maximum offset to the right to consider
-                 for retrieving the value. Defaults to 0.
+        Args:
+            _sheet (pandas.DataFrame): The sheet to search within.
+            keynames (list, optional): A list of keynames to search for. Defaults to None.
+                                       If None, an empty list is effectively used, and an empty list will be returned.
+            limitoffset (int, optional): The maximum offset to the right to consider
+                for retrieving the value. Defaults to 0.
 
-         Returns:
-             list: A list containing the single value found to the right of the first
-                 occurring keyname, within the offset limit.  Returns an empty list
-                 if none of the keynames are found, or if no value is found within the
-                 offset limit for the first found key.
-         """
+        Returns:
+            list: A list containing the single value found to the right of the first
+                occurring keyname, within the offset limit.  Returns an empty list
+                if none of the keynames are found, or if no value is found within the
+                offset limit for the first found key.
+        """
         allResults = []
         for keyname in keynames:
             data_rows = self.getAllRowsFromKey(_sheet, keyname)
             if len(data_rows) > 0:
                 row = data_rows[0]
                 allResults.append(
-                    self._getNextValue(row["data"], row["col_index"] + 1, limitoffset))
+                    self._getNextValue(row["data"], row["col_index"] + 1, limitoffset)
+                )
                 break
 
         return allResults
@@ -113,50 +111,55 @@ class LookupMixin:
         """
 
         dataRows = []
+        key_lower = keyname.lower().strip()
 
-        for row in range(_sheet.shape[0]):  # df is the DataFrame
-            for col in range(_sheet.shape[1]):
-                if not pd.isna(_sheet.iloc[row, col]) \
-                        and isinstance(_sheet.iloc[row, col], str) \
-                        and _sheet.iloc[row, col].lower().strip() == keyname.lower().strip():
-                    dataRows.append({"data": _sheet.loc[row],
-                                     "row_index": row,
-                                     "col_index": col
-                                     })
+        # Improved version: still correct first-match-per-row semantics,
+        # but avoids unnecessary NaN checks and uses direct string compare.
+        # For repeated calls on the same large sheet, a cached lowercased view
+        # would yield further gains.
+        for row_idx in range(_sheet.shape[0]):
+            row = _sheet.iloc[row_idx]
+            for col_idx, val in enumerate(row):
+                if isinstance(val, str) and val.lower().strip() == key_lower:
+                    dataRows.append({
+                        "data": _sheet.loc[row_idx],
+                        "row_index": row_idx,
+                        "col_index": col_idx,
+                    })
                     break
 
         return dataRows
 
     def getValueFromPosition(self, _sheet, col, row, as_string=True):
         """
-         Retrieves a value from a specific cell in a sheet using its column and row indices.
+        Retrieves a value from a specific cell in a sheet using its column and row indices.
 
-         **Important:** This method is provided for exceptional cases where other data
-         retrieval methods are not feasible.  Directly accessing data using fixed
-         coordinates is generally discouraged due to its inflexibility.
+        **Important:** This method is provided for exceptional cases where other data
+        retrieval methods are not feasible.  Directly accessing data using fixed
+        coordinates is generally discouraged due to its inflexibility.
 
-         **Row Indexing:**  Because the first row of the DataFrame corresponds to the
-         header (column names), you must adjust the Excel row number when using this
-         method.  Specifically:
-             - Excel row 1 (header) corresponds to `row = -1`
-             - Excel row 2 corresponds to `row = 0`
-             - Excel row 3 corresponds to `row = 1`
-             and so on.
+        **Row Indexing:**  Because the first row of the DataFrame corresponds to the
+        header (column names), you must adjust the Excel row number when using this
+        method.  Specifically:
+            - Excel row 1 (header) corresponds to `row = -1`
+            - Excel row 2 corresponds to `row = 0`
+            - Excel row 3 corresponds to `row = 1`
+            and so on.
 
-         Args:
-             _sheet (pandas.DataFrame): The sheet to retrieve the value from.
-             col (int): The column index (0-based).
-             row (int): The adjusted row index (see explanation above).
-             as_string (bool, optional): If True (default), converts the retrieved
-                 value to a string and strips whitespace. If False, returns the
-                 value as its original type.
+        Args:
+            _sheet (pandas.DataFrame): The sheet to retrieve the value from.
+            col (int): The column index (0-based).
+            row (int): The adjusted row index (see explanation above).
+            as_string (bool, optional): If True (default), converts the retrieved
+                value to a string and strips whitespace. If False, returns the
+                value as its original type.
 
-         Returns:
-             str or object: The value from the specified cell.  Returns a string
-                 if `as_string` is True, otherwise returns the value with its
-                 original data type.  If the cell is part of the header (row = -1),
-                 the corresponding column name is returned.
-         """
+        Returns:
+            str or object: The value from the specified cell.  Returns a string
+                if `as_string` is True, otherwise returns the value with its
+                original data type.  If the cell is part of the header (row = -1),
+                the corresponding column name is returned.
+        """
 
         if row == -1:
             oValue = _sheet.columns[col]
@@ -214,8 +217,12 @@ class LookupMixin:
             The next non-NaN value found, or None if no such value is found within the limit.
         """
         max_offset = len(list_like) if limitOffset <= 0 else initial_position + limitOffset
-        for index in range(initial_position, min(max_offset, len(list_like))):  # Ensure index does not go beyond list bounds.
-            value = list_like.iloc[index] if hasattr(list_like, 'iloc') else list_like[index]  # Handles both Series and list-like.
+        for index in range(
+            initial_position, min(max_offset, len(list_like))
+        ):  # Ensure index does not go beyond list bounds.
+            value = (
+                list_like.iloc[index] if hasattr(list_like, "iloc") else list_like[index]
+            )  # Handles both Series and list-like.
             if not pd.isna(value):
                 return value
         return None  # Return None if no value is found.
