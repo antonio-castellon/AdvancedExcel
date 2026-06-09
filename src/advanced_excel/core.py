@@ -56,7 +56,7 @@ class AdvancedExcel(
     COL_INDEX = "col_index"
     DATA = "data"
 
-    __version__ = "1.0.0"
+    __version__ = "2.0.0"
 
 
 # Module-level aliases for the constants (so that both
