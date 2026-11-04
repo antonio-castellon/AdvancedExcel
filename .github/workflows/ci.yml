@@ -6,45 +6,53 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install package with dev extras
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev,sspipe]"
+      - name: Install locked dependencies
+        run: uv sync --locked --extra dev --extra sspipe
 
       - name: Run tests with coverage
-        run: |
-          pytest tests/ --cov=src --cov-report=xml -q
+        run: uv run --no-sync pytest tests/ --cov=src --cov-report=xml -q
 
       - name: Upload coverage (optional)
         if: matrix.python-version == '3.12'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
           files: ./coverage.xml
 
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           python-version: "3.12"
-      - run: pip install ruff black mypy
-      - run: ruff check src tests
-      - run: black --check src tests
+      - run: uv sync --locked --extra dev
+      - run: uv run --no-sync ruff check src tests
+      - run: uv run --no-sync black --check src tests
       # mypy is permissive for now
-      - run: mypy src --ignore-missing-imports || true
+      - run: uv run --no-sync mypy src --ignore-missing-imports || true

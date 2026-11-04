@@ -82,7 +82,7 @@ class IOMixin:
         Returns:
             pandas.DataFrame: The DataFrame representing the requested sheet, or None if the sheet does not exist.
         """
-        if sheetname in self.sheets.keys():
+        if sheetname in self.sheets:
             return self.sheets[sheetname]
         else:
             return None

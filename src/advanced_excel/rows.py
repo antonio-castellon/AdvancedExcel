@@ -274,14 +274,11 @@ class RowMixin:
         index_bottom = len(df.index)
         index_top = -1
         for index in range(init_row, index_bottom):
-            cell_value = df.loc[index][index_column]
+            cell_value = df.loc[index].iloc[index_column]
             if (cell_value == value) or (
                 pd.isnull(value) and pd.isnull(cell_value)
             ):  # Handle NaN comparison
-                if include_remove_row:
-                    index_top = index
-                else:
-                    index_top = index + 1
+                index_top = index if include_remove_row else index + 1
                 break
         if index_top != -1:
             df = df.drop(range(index_top, index_bottom))
@@ -308,8 +305,8 @@ class RowMixin:
         """
         index_bottom = len(df.index)
         index_top = -1
-        for index in range(init_row, index_bottom + 1):
-            cell_value = df.loc[index][index_column]
+        for index in range(init_row, index_bottom):
+            cell_value = df.loc[index].iloc[index_column]
             if (
                 (isinstance(value, list) and any(cell_value == v for v in value))
                 or cell_value == value
@@ -363,7 +360,7 @@ class RowMixin:
         df = df.drop(columns=["index"], errors="ignore")
         return df
 
-    def fill_forward_row_values(self, df, columnNames=[]):
+    def fill_forward_row_values(self, df, columnNames=None):
         """
         Fills forward missing values in specified columns of a DataFrame.
 
@@ -385,7 +382,7 @@ class RowMixin:
         Returns:
             pandas.DataFrame: The modified DataFrame (the modification is done in place).
         """
-        for cName in columnNames:
+        for cName in columnNames or []:
             if cName in df:
                 df[cName] = df[cName].ffill()
         return df
@@ -406,8 +403,8 @@ class RowMixin:
             A copy of the DataFrame is created, so the original DataFrame is not modified in place.
         """
         headers = df.columns.tolist()  # Get the current header
-        df.loc[-1] = headers  # Insert the header as a new row at index -1
-        df = df.sort_index().reset_index(drop=True)  # Sort by index and reset it
+        header_row = pd.DataFrame([headers], columns=df.columns, dtype=object)
+        df = pd.concat([header_row, df], ignore_index=True)
         return df
 
     def set_row_as_header(self, df, index_row, uppercase=False, char_space_to=" "):

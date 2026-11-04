@@ -14,9 +14,10 @@ importable after `pip install -e .`. The logic has been validated via
 composition tests during the refactor.
 """
 
+from pathlib import Path
+
 import pandas as pd
 import pytest
-from pathlib import Path
 
 # The tests assume the package is installed or on PYTHONPATH correctly
 # (as after `pip install -e .` from the project root).
@@ -225,11 +226,19 @@ def test_remove_all_rows_from_column_variants(ae):
     )
     assert len(r1) == 0 or r1.iloc[0]["K"] != "Batch"
 
-    r2 = ae.remove_all_rows_from_a_column_when_has_value(df.copy(), 0, 0, "Batch", include_remove_row=False)
+    r2 = ae.remove_all_rows_from_a_column_when_has_value(
+        df.copy(), 0, 0, "Batch", include_remove_row=False
+    )
     assert len(r2) > 0
 
     r3 = ae.remove_all_rows_before_column_value(df.copy(), 0, 0, "Batch")
     assert len(r3) >= 2
+
+    # value not present: nothing removed, no KeyError
+    r4 = ae.remove_all_rows_before_column_value(df.copy(), 0, 0, "missing")
+    assert len(r4) == len(df)
+    r5 = ae.remove_all_rows_from_a_column_when_has_value(df.copy(), 0, 0, "missing")
+    assert len(r5) == len(df)
 
 
 def test_remove_row_by_index(ae):
@@ -405,7 +414,9 @@ def test_transform_numeric_and_fill_left(ae):
     assert pd.api.types.is_numeric_dtype(t1["N"])
 
     t2 = ae.transform_as_numeric(df.copy(), columnsToApply=["N"])
+    assert pd.api.types.is_numeric_dtype(t2["N"])
     t3 = ae.transform_as_numeric(df.copy(), columnsToAvoid=["N"])
+    assert not pd.api.types.is_numeric_dtype(t3["N"])
 
     left = pd.DataFrame({"A": [1, None, None], "B": [None, 5, None]})
     # row 0: A=1 sets left_value, B=None gets filled from left ->1
