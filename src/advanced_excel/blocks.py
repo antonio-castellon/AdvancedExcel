@@ -55,7 +55,7 @@ class BlockTableMixin:
         allDfBlocks = []
 
         identified_rows = self.get_all_rows_from_key(df, key_name)
-        list_index_of_rows = list(map(lambda x: x["row_index"], identified_rows))
+        list_index_of_rows = [x["row_index"] for x in identified_rows]
 
         for index in range(len(list_index_of_rows)):
             ini = list_index_of_rows[index]

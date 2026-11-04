@@ -49,7 +49,7 @@ class LookupMixin:
 
         return allResults
 
-    def get_next_value_from_key_list(self, _sheet, keynames=[], limitoffset=0):
+    def get_next_value_from_key_list(self, _sheet, keynames=None, limitoffset=0):
         """
         Searches a sheet for the first occurrence of any keyname from a given list
         and returns the value immediately to its right, within a specified offset limit.
@@ -75,7 +75,7 @@ class LookupMixin:
                 offset limit for the first found key.
         """
         allResults = []
-        for keyname in keynames:
+        for keyname in keynames or []:
             data_rows = self.get_all_rows_from_key(_sheet, keyname)
             if len(data_rows) > 0:
                 row = data_rows[0]
@@ -121,11 +121,13 @@ class LookupMixin:
             row = _sheet.iloc[row_idx]
             for col_idx, val in enumerate(row):
                 if isinstance(val, str) and val.lower().strip() == key_lower:
-                    dataRows.append({
-                        "data": _sheet.loc[row_idx],
-                        "row_index": row_idx,
-                        "col_index": col_idx,
-                    })
+                    dataRows.append(
+                        {
+                            "data": _sheet.loc[row_idx],
+                            "row_index": row_idx,
+                            "col_index": col_idx,
+                        }
+                    )
                     break
 
         return dataRows
@@ -161,10 +163,7 @@ class LookupMixin:
                 the corresponding column name is returned.
         """
 
-        if row == -1:
-            oValue = _sheet.columns[col]
-        else:
-            oValue = _sheet.iloc[row, col]
+        oValue = _sheet.columns[col] if row == -1 else _sheet.iloc[row, col]
         if isinstance(oValue, str):
             return oValue.strip()
         else:
