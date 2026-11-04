@@ -45,12 +45,12 @@ class ReshapeMixin:
             df[column_name_id] = (
                 df[column_to_melt] + "_" + df["column_name"]
             )  # Combine parameter and column names
-            df.drop(columns=[column_to_melt], inplace=True)  # Drop the original parameter column
+            df = df.drop(columns=[column_to_melt])  # Drop the original parameter column
         else:  # Modify the original parameter column
             df[column_to_melt] = (
                 df[column_to_melt] + "_" + df["column_name"]
             )  # Combine parameter and column names
-        df.drop(columns=["column_name"], inplace=True)  # Drop the temporary column name column
+        df = df.drop(columns=["column_name"])  # Drop the temporary column name column
 
         return df
 
@@ -102,7 +102,7 @@ class ReshapeMixin:
             long_df, index=["PARAMETERS"], columns=[column_to_generate_columns], values="value"
         )  # Pivot
         wide_df[column_name_id] = wide_df.index  # Add ID column
-        wide_df.reset_index(drop=True, inplace=True)  # Reset index
+        wide_df = wide_df.reset_index(drop=True)  # Reset index
         wide_df = wide_df[
             [column_name_id] + [col for col in wide_df.columns if col not in [column_name_id]]
         ]  # Reorder columns

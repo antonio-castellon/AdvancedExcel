@@ -328,7 +328,7 @@ class CleaningMixin:
         Returns:
             pandas.DataFrame: The modified DataFrame (the modification is done in place).
         """
-        df.rename(columns=dictionary, inplace=True)
+        df.columns = [dictionary.get(c, c) for c in df.columns]
         return df
 
     def rename_headers_by_regexp(self, df, regexp, value=""):
@@ -408,7 +408,9 @@ class CleaningMixin:
             pandas.DataFrame: The modified DataFrame (the modification is done in place).
         """
         if columnName is not None:
-            df = self.replace_nan_in_column_by_nan_strings(df, columnName)  # Handle potential NaN values
+            df = self.replace_nan_in_column_by_nan_strings(
+                df, columnName
+            )  # Handle potential NaN values
             df.loc[:, columnName] = df[columnName].str.strip()  # Remove leading/trailing whitespace
 
             if title:
