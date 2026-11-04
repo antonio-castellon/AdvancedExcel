@@ -97,12 +97,10 @@ class ColumnMixin:
             pandas.DataFrame: A new DataFrame with the columns removed. A copy of the
             DataFrame is created, so the original DataFrame is not modified in place.
         """
-        header_was_found = False
         index_column = -1
         for idx, cname in enumerate(df.columns):
             if cname == header_value:
                 if not skip_first:
-                    header_was_found = True
                     index_column = idx  # position of the target column
                     break
                 else:
@@ -131,12 +129,10 @@ class ColumnMixin:
             pandas.DataFrame: A new DataFrame with the columns removed. A copy of the
             DataFrame is created, so the original DataFrame is not modified in place.
         """
-        header_was_found = False
         index_column = -1
         for idx, cname in enumerate(df.columns):
             if cname == header_value:
                 if not skip_first:
-                    header_was_found = True
                     index_column = idx  # position of the target column
                     break
                 else:

@@ -12,8 +12,6 @@ Implementation is in core.py (the thin class + mixin imports) and the various
 *Mixin modules.
 """
 
-from .core import AdvancedExcel
-from .core import ROW_INDEX, COL_INDEX, DATA, __version__
+from .core import COL_INDEX, DATA, ROW_INDEX, AdvancedExcel, __version__
 
 __all__ = ["AdvancedExcel", "ROW_INDEX", "COL_INDEX", "DATA", "__version__"]
-
